@@ -1,6 +1,0 @@
-#1 Criar Dockerfile
-#2 Fazer build da imagem 
-  docker build -t go-app:1.0
-#3 rodar container
-  docker run -it --rm go-app:1.0
-#4 Fazer Dockefile multistage

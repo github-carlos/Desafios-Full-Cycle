@@ -10,7 +10,7 @@ RUN go build -v -o /usr/local/bin/app ./...
 
 CMD ["app"]
 
-FROM alpine:latest
+FROM scratch
 WORKDIR /app
 COPY --from=builder /usr/local/bin/app ./
 CMD [ "./app" ]
