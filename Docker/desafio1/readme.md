@@ -7,4 +7,4 @@ Fazer o upload da imagem para o DockerHub
 
 
 ### Nome da imagem
-carlosdocking/go-app:1.0
+carlosdocking/go-app:2.0
