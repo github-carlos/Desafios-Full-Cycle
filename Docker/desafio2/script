@@ -1,0 +1,4 @@
+
+1 - Criar imagem Dockerfile para a aplicacao Node
+2 - Criar Dockercompose para rodar a aplicacao node com o banco Mysql
+3 - Criar image Dockerfile para Nginx
