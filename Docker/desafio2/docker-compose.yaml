@@ -1,11 +1,21 @@
 version: '3'
 
 services: 
+  nginx:
+    build:
+      context: nginx
+    container_name: nginx-server
+    ports:
+      - '80:80'
+    depends_on:
+      - app
+    networks:
+      - node-network
   app:
     build: 
       context: node
     container_name: app
-    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 120s node index.js
     networks: 
       - node-network
     tty: true
