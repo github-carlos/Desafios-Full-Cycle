@@ -1,0 +1,12 @@
+
+Install protos dependencias for making able to compile the code
+
+Optionally install proto vscode for helping with syntax
+
+create a .proto file with 'message' definition
+
+In the same file adds 'service' definition
+
+Optionally creates a fold for keeps the output compiled files (option go_package)
+
+compile the proto files (protoc --proto_path=proto proto/*.proto --go_out=pb)
