@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/github-carlos/Desafios-Full-Cycle/pb"
+	"github.com/github-carlos/Desafios-Full-Cycle/services"
 	"google.golang.org/grpc"
 )
 
@@ -16,6 +18,8 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+
+	pb.RegisterUserServiceServer(grpcServer, &services.UserService{})
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("Could not Serve: %v", err)
