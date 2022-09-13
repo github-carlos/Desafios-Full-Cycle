@@ -16,6 +16,8 @@ func main() {
 		log.Fatalf("Could not connect to Server: %v", err)
 	}
 
+	defer connection.Close()
+
 	client := pb.NewUserServiceClient(connection)
 	AddUser(client)
 }
