@@ -9,4 +9,4 @@ In the same file adds 'service' definition
 
 Optionally creates a fold for keeps the output compiled files (option go_package)
 
-compile the proto files (protoc --proto_path=proto proto/*.proto --go_out=pb)
+compile the proto files (protoc --proto_path=proto proto/*.proto --go_out=pb --go-grpc_out=pb)
