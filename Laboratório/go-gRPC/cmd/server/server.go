@@ -7,6 +7,7 @@ import (
 	"github.com/github-carlos/Desafios-Full-Cycle/pb"
 	"github.com/github-carlos/Desafios-Full-Cycle/services"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -18,6 +19,8 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
+
+	reflection.Register(grpcServer)
 
 	pb.RegisterUserServiceServer(grpcServer, &services.UserService{})
 
