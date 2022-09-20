@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"time"
 
 	"github.com/github-carlos/Desafios-Full-Cycle/pb"
@@ -20,6 +22,32 @@ func (*UserService) AddUser(ctx context.Context, req *pb.User) (*pb.User, error)
 		Name:  req.GetName(),
 		Email: req.GetEmail(),
 	}, nil
+}
+
+// AddUsers(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUsersClient, error)
+func (*UserService) AddUsers(stream pb.UserService_AddUsersServer) error {
+	users := []*pb.User{}
+
+	for {
+		req, err := stream.Recv()
+
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.Users{
+				User: users,
+			})
+		}
+
+		if err != nil {
+			log.Fatalf("Error receing stream: %v", err)
+		}
+		users = append(users, &pb.User{
+			Id:    req.GetId(),
+			Name:  req.GetName(),
+			Email: req.GetEmail(),
+		})
+
+		fmt.Println("Adding", req.GetName())
+	}
 }
 
 func (*UserService) AddUserVerbose(req *pb.User, stream pb.UserService_AddUserVerboseServer) error {
