@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/github-carlos/Desafios-Full-Cycle/pb"
@@ -19,7 +20,8 @@ func main() {
 	defer connection.Close()
 
 	client := pb.NewUserServiceClient(connection)
-	AddUser(client)
+	// AddUser(client)
+	AddUserVerbose(client)
 }
 
 func AddUser(client pb.UserServiceClient) {
@@ -35,4 +37,31 @@ func AddUser(client pb.UserServiceClient) {
 	}
 
 	fmt.Print(res)
+}
+
+func AddUserVerbose(client pb.UserServiceClient) {
+	req := &pb.User{
+		Id:    "0",
+		Name:  "Carlos Eduardo",
+		Email: "carlos@email.com",
+	}
+
+	res, err := client.AddUserVerbose(context.Background(), req)
+
+	if err != nil {
+		log.Fatalf("Could not make request to gRPC server: %v", err)
+	}
+
+	for {
+		stream, err := res.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Could not receive message %v", err)
+		}
+
+		fmt.Println("Status:", stream.Status, "User:", stream.GetUser())
+	}
+
 }
