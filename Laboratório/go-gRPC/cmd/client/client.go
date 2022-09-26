@@ -107,6 +107,8 @@ func AddUsersStreamBidirectional(client pb.UserServiceClient) {
 		&pb.User{Id: "3", Name: "Carlos 3", Email: "carloseduardo3@email.com"},
 	}
 
+	wait := make(chan int)
+
 	go func() {
 		for _, req := range reqs {
 			fmt.Println("Sending User: ", req.Name)
@@ -128,6 +130,7 @@ func AddUsersStreamBidirectional(client pb.UserServiceClient) {
 			}
 			fmt.Printf("Receiving User %v with Status %v", res.GetUser().GetName(), res.GetStatus())
 		}
+		close(wait)
 	}()
-
+	<-wait
 }
