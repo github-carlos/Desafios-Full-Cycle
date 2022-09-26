@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/github-carlos/Desafios-Full-Cycle/pb"
 	"google.golang.org/grpc"
@@ -64,4 +65,31 @@ func AddUserVerbose(client pb.UserServiceClient) {
 		fmt.Println("Status:", stream.Status, "User:", stream.GetUser())
 	}
 
+}
+
+func AddUsers(client pb.UserServiceClient) {
+	reqs := []*pb.User{
+		&pb.User{Id: "1", Name: "Carlos 1", Email: "carloseduardo1@email.com"},
+		&pb.User{Id: "2", Name: "Carlos 2", Email: "carloseduardo2@email.com"},
+		&pb.User{Id: "3", Name: "Carlos 3", Email: "carloseduardo3@email.com"},
+	}
+
+	stream, err := client.AddUsers(context.Background())
+
+	if err != nil {
+		log.Fatalf("Could not create stream %v", err)
+	}
+
+	for _, req := range reqs {
+		stream.Send(req)
+		time.Sleep(time.Second * 3)
+	}
+
+	res, err := stream.CloseAndRecv()
+
+	if err != nil {
+		log.Fatalf("Could not close stream: %v", err)
+	}
+
+	fmt.Println(res)
 }
