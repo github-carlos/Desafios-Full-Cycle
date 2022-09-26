@@ -25,6 +25,7 @@ type UserServiceClient interface {
 	AddUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
 	AddUserVerbose(ctx context.Context, in *User, opts ...grpc.CallOption) (UserService_AddUserVerboseClient, error)
 	AddUsers(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUsersClient, error)
+	AddUserStereamBidirect(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUserStereamBidirectClient, error)
 }
 
 type userServiceClient struct {
@@ -110,6 +111,37 @@ func (x *userServiceAddUsersClient) CloseAndRecv() (*Users, error) {
 	return m, nil
 }
 
+func (c *userServiceClient) AddUserStereamBidirect(ctx context.Context, opts ...grpc.CallOption) (UserService_AddUserStereamBidirectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserService_ServiceDesc.Streams[2], "/pb.UserService/AddUserStereamBidirect", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userServiceAddUserStereamBidirectClient{stream}
+	return x, nil
+}
+
+type UserService_AddUserStereamBidirectClient interface {
+	Send(*User) error
+	Recv() (*UserResultStream, error)
+	grpc.ClientStream
+}
+
+type userServiceAddUserStereamBidirectClient struct {
+	grpc.ClientStream
+}
+
+func (x *userServiceAddUserStereamBidirectClient) Send(m *User) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *userServiceAddUserStereamBidirectClient) Recv() (*UserResultStream, error) {
+	m := new(UserResultStream)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -117,6 +149,7 @@ type UserServiceServer interface {
 	AddUser(context.Context, *User) (*User, error)
 	AddUserVerbose(*User, UserService_AddUserVerboseServer) error
 	AddUsers(UserService_AddUsersServer) error
+	AddUserStereamBidirect(UserService_AddUserStereamBidirectServer) error
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -132,6 +165,9 @@ func (UnimplementedUserServiceServer) AddUserVerbose(*User, UserService_AddUserV
 }
 func (UnimplementedUserServiceServer) AddUsers(UserService_AddUsersServer) error {
 	return status.Errorf(codes.Unimplemented, "method AddUsers not implemented")
+}
+func (UnimplementedUserServiceServer) AddUserStereamBidirect(UserService_AddUserStereamBidirectServer) error {
+	return status.Errorf(codes.Unimplemented, "method AddUserStereamBidirect not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -211,6 +247,32 @@ func (x *userServiceAddUsersServer) Recv() (*User, error) {
 	return m, nil
 }
 
+func _UserService_AddUserStereamBidirect_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserServiceServer).AddUserStereamBidirect(&userServiceAddUserStereamBidirectServer{stream})
+}
+
+type UserService_AddUserStereamBidirectServer interface {
+	Send(*UserResultStream) error
+	Recv() (*User, error)
+	grpc.ServerStream
+}
+
+type userServiceAddUserStereamBidirectServer struct {
+	grpc.ServerStream
+}
+
+func (x *userServiceAddUserStereamBidirectServer) Send(m *UserResultStream) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *userServiceAddUserStereamBidirectServer) Recv() (*User, error) {
+	m := new(User)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -232,6 +294,12 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "AddUsers",
 			Handler:       _UserService_AddUsers_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "AddUserStereamBidirect",
+			Handler:       _UserService_AddUserStereamBidirect_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
