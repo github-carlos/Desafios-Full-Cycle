@@ -93,3 +93,41 @@ func AddUsers(client pb.UserServiceClient) {
 
 	fmt.Println(res)
 }
+
+func AddUsersStreamBidirectional(client pb.UserServiceClient) {
+	stream, err := client.AddUserStereamBidirect(context.Background())
+
+	if err != nil {
+		log.Fatalf("Could not connect to server: %v", err)
+	}
+
+	reqs := []*pb.User{
+		&pb.User{Id: "1", Name: "Carlos 1", Email: "carloseduardo1@email.com"},
+		&pb.User{Id: "2", Name: "Carlos 2", Email: "carloseduardo2@email.com"},
+		&pb.User{Id: "3", Name: "Carlos 3", Email: "carloseduardo3@email.com"},
+	}
+
+	go func() {
+		for _, req := range reqs {
+			fmt.Println("Sending User: ", req.Name)
+			stream.Send(req)
+			time.Sleep(time.Second * 2)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Error receiving response: %v", err)
+				break
+			}
+			fmt.Printf("Receiving User %v with Status %v", res.GetUser().GetName(), res.GetStatus())
+		}
+	}()
+
+}
