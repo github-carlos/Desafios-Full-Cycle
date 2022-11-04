@@ -16,7 +16,7 @@ describe("#Order", () => {
   });
 
   it("should calculate total correctly when total called with 1 item", () => {
-    const item = new OrderItem("123", "Item 1", 100);
+    const item = new OrderItem("123", "Item 1", 100, "", 1);
     const order = new Order("123", "123", [item]);
     const total = order.total();
     expect(total).toBe(item.price);

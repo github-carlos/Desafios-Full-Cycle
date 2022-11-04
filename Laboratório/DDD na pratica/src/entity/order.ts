@@ -3,7 +3,7 @@ import OrderItem from "./order_item";
 export default class Order {
 
   private _total: number;
-  constructor(private id: string, private customerId: string, private items: OrderItem[]) {
+  constructor(private id: string, private customerId: string, private _items: OrderItem[]) {
     this.validate();
   }
 
@@ -14,12 +14,12 @@ export default class Order {
     if (this.customerId.length === 0) {
       throw new Error("customerId is required");
     }
-    if (this.items.length === 0) {
+    if (this._items.length === 0) {
       throw new Error("Order should have at least one item");
     }
   }
 
   total(): number {
-    return this.items.reduce((acc, item) => acc + item.price, 0);
+    return this._items.reduce((acc, item) => acc + item.orderItemTotal(), 0);
   }
 }
