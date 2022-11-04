@@ -1,9 +1,14 @@
 import Address from "./address";
 
 export default class Customer {
+  private _rewardPoints: number = 0;
   constructor(private _id: string, private _name: string, private _address?: Address, private _active?: boolean) {
     this.validate();
   } 
+
+  get id() {
+    return this._id;
+  }
 
   get name() {
     return this._name;
@@ -11,6 +16,10 @@ export default class Customer {
 
   get active() {
     return this._active;
+  }
+
+  get rewardPoints(): number {
+    return this._rewardPoints;
   }
 
   changeName(name: string) {
@@ -23,6 +32,10 @@ export default class Customer {
       throw new Error("Address is needed to activate a Customer");
     }
     this._active = true;
+  }
+
+  addRewardPoints(points: number) {
+    this._rewardPoints += points;
   }
 
   deactivate() {
