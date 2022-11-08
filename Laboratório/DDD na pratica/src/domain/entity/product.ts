@@ -2,6 +2,10 @@
 
 export default class Product {
 
+  get id() {
+    return this._id;
+  }
+
   get name() {
     return this._name;
   }
@@ -10,12 +14,12 @@ export default class Product {
     return this._price;
   }
 
-  constructor(private id: string, private _name: string, private _price: number) {
+  constructor(private _id: string, private _name: string, private _price: number) {
     this.validate();
   }
 
   validate() {
-    if (this.id.length === 0) {
+    if (this._id.length === 0) {
       throw new Error("id is required");
     }
     if (this._name.length === 0) {
