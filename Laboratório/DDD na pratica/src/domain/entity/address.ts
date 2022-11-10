@@ -1,4 +1,4 @@
 
 export default class Address {
-  constructor() {}
+  constructor(public street, public number, public zip, public city) {}
 }
