@@ -78,7 +78,15 @@ describe("Order repository test", () => {
     const orderResult = await orderRepository.find(order.id);
 
     expect(orderResult).toStrictEqual(order);
-  })
+  });
+
+  it ("should throw error when order not found", async() => {
+    const orderRepository = new OrderRepository();
+
+    expect(async() => {
+      await orderRepository.find('123invalid');
+    }).rejects.toThrow("Order not found");
+  });
 
 
 });
