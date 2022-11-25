@@ -59,6 +59,11 @@ export default class Customer {
   }
 
   validate() {
+
+    if(this._active === undefined || this._active === null) {
+      this._active = false;
+    }
+
     if (this._name.length === 0) {
       throw new Error("Customer name can not be empty");
     }

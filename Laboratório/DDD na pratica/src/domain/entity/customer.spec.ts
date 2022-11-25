@@ -3,26 +3,26 @@ import Customer from "./customer";
 
 describe('#Customer', () => {
   it('should throw error when id is empty', () => {
-    expect(() => new Customer('', 'Carlos', new Address(), true)).toThrowError();
+    expect(() => new Customer('', 'Carlos', new Address('123', 10, '1234', 'city'), true)).toThrowError();
   });
   it('should throw error when name is empty', () => {
-    expect(() => new Customer('123', '', new Address(), true)).toThrowError();
+    expect(() => new Customer('123', '', new Address('123', 10, '1234', 'city'), true)).toThrowError();
   });
 
   it("should change name", () => {
-    const customer = new Customer("123", "Carlos 1", new Address(), true);
+    const customer = new Customer("123", "Carlos 1", new Address('123', 10, '1234', 'city'), true);
     const newName = "Carlos 2";
     customer.changeName(newName);
     expect(customer.name).toBe(newName);
   });
 
   it("should throw error when changed name is invalid", () => {
-    const customer = new Customer("123", "Carlos 1", new Address(), true);
+    const customer = new Customer("123", "Carlos 1", new Address('123', 10, '1234', 'city'), true);
     expect(() => customer.changeName('')).toThrowError();
   });
 
   it("should active customer", () => {
-    const customer = new Customer("123", "Carlos 1", new Address(), false);
+    const customer = new Customer("123", "Carlos 1", new Address('123', 10, '1234', 'city'), false);
     customer.activate();
     expect(customer.active).toBeTruthy();
   });
@@ -33,7 +33,7 @@ describe('#Customer', () => {
   });
 
   it("should deactivate user", () => {
-    const customer = new Customer("123", "Carlos 1", new Address(), true);
+    const customer = new Customer("123", "Carlos 1", new Address('123', 10, '1234', 'city'), true);
     customer.deactivate();
     expect(customer.active).toBeFalsy();
   })
