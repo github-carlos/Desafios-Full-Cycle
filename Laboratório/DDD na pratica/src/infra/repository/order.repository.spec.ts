@@ -119,6 +119,6 @@ describe("Order repository test", () => {
 
     const updatedOrder = await orderRepository.find(order.id);
 
-    expect(updatedOrder.customerId).toStrictEqual(order.customerId);
+    expect(updatedOrder.customerId).toStrictEqual(customer.id);
   });
 });
