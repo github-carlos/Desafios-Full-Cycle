@@ -1,3 +1,4 @@
+import Customer from "./customer";
 import OrderItem from "./order_item";
 
 export default class Order {
@@ -16,6 +17,10 @@ export default class Order {
 
   constructor(private _id: string, private _customerId: string, private _items: OrderItem[]) {
     this.validate();
+  }
+
+  changeCustomer(newCustomer: Customer) {
+    this._customerId = newCustomer.id;
   }
 
   validate() {

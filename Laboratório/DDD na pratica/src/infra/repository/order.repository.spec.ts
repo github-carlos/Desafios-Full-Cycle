@@ -22,9 +22,15 @@ async function makeOrder(): Promise<Order> {
   const product = new Product("123", "Product Name", 10);
   await productRepository.create(product);
 
-  const orderItem = new OrderItem("1", product.name, product.price, product.id, 2);
+  const orderItem = new OrderItem(
+    "1",
+    product.name,
+    product.price,
+    product.id,
+    2
+  );
 
-  return new Order('123', customer.id, [orderItem]);
+  return new Order("123", customer.id, [orderItem]);
 }
 
 describe("Order repository test", () => {
@@ -38,7 +44,12 @@ describe("Order repository test", () => {
       sync: { force: true },
     });
 
-    await sequelize.addModels([CustomerModel, OrderModel, OrderItemModel, ProductModel, ]);
+    await sequelize.addModels([
+      CustomerModel,
+      OrderModel,
+      OrderItemModel,
+      ProductModel,
+    ]);
     await sequelize.sync();
   });
 
@@ -47,29 +58,32 @@ describe("Order repository test", () => {
     await sequelize.close();
   });
 
-  it("should create a new order", async() => {
+  it("should create a new order", async () => {
     const order = await makeOrder();
     const orderRepository = new OrderRepository();
     await orderRepository.create(order);
 
-    const orderModel = await OrderModel.findOne({where: {id: order.id}, include: ['items']});
+    const orderModel = await OrderModel.findOne({
+      where: { id: order.id },
+      include: ["items"],
+    });
 
     expect(orderModel.toJSON()).toStrictEqual({
       id: "123",
       customer_id: "123",
       total: order.total(),
       items: order.items.map((orderItem) => ({
-          id: orderItem.id,
-          name: orderItem.name,
-          price: orderItem.price,
-          quantity: orderItem.quantity,
-          product_id: "123",
-          order_id: "123" 
-      }))
+        id: orderItem.id,
+        name: orderItem.name,
+        price: orderItem.price,
+        quantity: orderItem.quantity,
+        product_id: "123",
+        order_id: "123",
+      })),
     });
   });
 
-  it("should find an order", async() => {
+  it("should find an order", async () => {
     const order = await makeOrder();
     const orderRepository = new OrderRepository();
 
@@ -80,13 +94,31 @@ describe("Order repository test", () => {
     expect(orderResult).toStrictEqual(order);
   });
 
-  it ("should throw error when order not found", async() => {
+  it("should throw error when order not found", async () => {
     const orderRepository = new OrderRepository();
 
-    expect(async() => {
-      await orderRepository.find('123invalid');
+    expect(async () => {
+      await orderRepository.find("123invalid");
     }).rejects.toThrow("Order not found");
   });
 
+  it("should update an order", async () => {
+    const order = await makeOrder();
+    const orderRepository = new OrderRepository();
 
+    await orderRepository.create(order);
+
+    const customerRepository = new CustomerRepository();
+    const customer = new Customer("333", "New Costumer");
+    const address = new Address("Street 2", 2, "Zipcode 2", "City 2");
+    customer.changeAddress(address);
+    await customerRepository.create(customer);
+
+    order.changeCustomer(customer);
+    await orderRepository.update(order);
+
+    const updatedOrder = await orderRepository.find(order.id);
+
+    expect(updatedOrder.customerId).toStrictEqual(order.customerId);
+  });
 });
