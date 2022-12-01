@@ -11,7 +11,7 @@ import CustomerRepository from "./customer.repository";
 import OrderRepository from "./order.repository";
 import ProductRepository from "./product.repository";
 
-async function makeOrder(): Promise<Order> {
+async function makeOrder(orderItems: Array<OrderItem>): Promise<Order> {
   const customerRepository = new CustomerRepository();
   const customer = new Customer("123", "Carlos");
   const address = new Address("Street 1", 1, "Zipcode", "City");
@@ -22,15 +22,7 @@ async function makeOrder(): Promise<Order> {
   const product = new Product("123", "Product Name", 10);
   await productRepository.create(product);
 
-  const orderItem = new OrderItem(
-    "1",
-    product.name,
-    product.price,
-    product.id,
-    2
-  );
-
-  return new Order("123", customer.id, [orderItem]);
+  return new Order("123", customer.id, orderItems);
 }
 
 describe("Order repository test", () => {
@@ -59,7 +51,8 @@ describe("Order repository test", () => {
   });
 
   it("should create a new order", async () => {
-    const order = await makeOrder();
+    const orderItem = new OrderItem('123', 'item 1', 10, '123', 10);
+    const order = await makeOrder([orderItem]);
     const orderRepository = new OrderRepository();
     await orderRepository.create(order);
 
@@ -84,7 +77,8 @@ describe("Order repository test", () => {
   });
 
   it("should find an order", async () => {
-    const order = await makeOrder();
+    const orderItem = new OrderItem('123', 'item 1', 10, '123', 10);
+    const order = await makeOrder([orderItem]);
     const orderRepository = new OrderRepository();
 
     await orderRepository.create(order);
@@ -103,7 +97,8 @@ describe("Order repository test", () => {
   });
 
   it("should update an order", async () => {
-    const order = await makeOrder();
+    const orderItem = new OrderItem('123', 'item 1', 10, '123', 10);
+    const order = await makeOrder([orderItem]);
     const orderRepository = new OrderRepository();
 
     await orderRepository.create(order);
@@ -120,5 +115,32 @@ describe("Order repository test", () => {
     const updatedOrder = await orderRepository.find(order.id);
 
     expect(updatedOrder.customerId).toStrictEqual(customer.id);
+  });
+
+  it("should find all orders", async() => {
+  const customerRepository = new CustomerRepository();
+  const customer = new Customer("123", "Carlos");
+  const address = new Address("Street 1", 1, "Zipcode", "City");
+  customer.changeAddress(address);
+  await customerRepository.create(customer);
+
+  const productRepository = new ProductRepository();
+  const product = new Product("123", "Product Name", 10);
+  await productRepository.create(product);
+
+  const orderItem1 = new OrderItem('123', 'item 1', 10, '123', 10);
+  const orderItem2 = new OrderItem('456', 'item 2', 10, '123', 10);
+
+  const order1 = new Order("123", customer.id, [orderItem1]);
+  const order2 = new Order("345", customer.id, [orderItem2]);
+
+  const orderRepository = new OrderRepository();
+  await orderRepository.create(order1);
+  await orderRepository.create(order2);
+
+
+  const orders = await orderRepository.findAll();
+
+  expect(orders.length).toBe(2);
   });
 });
