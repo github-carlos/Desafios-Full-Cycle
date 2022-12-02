@@ -100,21 +100,26 @@ describe("Order repository test", () => {
     const orderItem = new OrderItem('123', 'item 1', 10, '123', 10);
     const order = await makeOrder([orderItem]);
     const orderRepository = new OrderRepository();
-
     await orderRepository.create(order);
 
-    const customerRepository = new CustomerRepository();
-    const customer = new Customer("333", "New Costumer");
-    const address = new Address("Street 2", 2, "Zipcode 2", "City 2");
-    customer.changeAddress(address);
-    await customerRepository.create(customer);
+    // creating new orderItem
+    const productRepository = new ProductRepository();
+    const product = new Product("456", "Product Name", 10);
+    await productRepository.create(product);   
+    const newOrderITem = new OrderItem("456", "item 2", 20, product.id, 2);
 
-    order.changeCustomer(customer);
+    order.addItem(newOrderITem);
     await orderRepository.update(order);
 
-    const updatedOrder = await orderRepository.find(order.id);
+    const updatedOrder = await OrderModel.findOne({
+      where: { id: order.id },
+      include: ["items"],
+    });
 
-    expect(updatedOrder.customerId).toStrictEqual(customer.id);
+    expect(updatedOrder.toJSON().items).toStrictEqual([
+      {id: '123', name: 'item 1', price: 10, product_id: '123', quantity: 10, order_id: order.id},
+      {id: '456', name: 'item 2', price: 20, product_id: '456', quantity: 2, order_id: order.id},
+    ]);
   });
 
   it("should find all orders", async() => {

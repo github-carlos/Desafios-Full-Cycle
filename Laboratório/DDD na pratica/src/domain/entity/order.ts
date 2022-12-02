@@ -19,8 +19,8 @@ export default class Order {
     this.validate();
   }
 
-  changeCustomer(newCustomer: Customer) {
-    this._customerId = newCustomer.id;
+  addItem(item: OrderItem) {
+    this._items.push(item);
   }
 
   validate() {

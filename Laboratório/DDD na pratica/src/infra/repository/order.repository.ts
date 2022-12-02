@@ -48,21 +48,42 @@ export default class OrderRepository implements OrderRepositoryInterface {
   }
 
   async update(entity: Order): Promise<void> {
-    await OrderModel.update(
-      {
-        customer_id: entity.customerId,
-        total: entity.total(),
-      },
-      {
-        where: {
-          id: entity.id,
-        },
+    try {
+      const order = await OrderModel.findOne({
+        where: { id: entity.id },
+        include: ["items"],
+      });
+
+      for (const item of entity.items) {
+        if (!order.items.map((i) => i.id).includes(item.id)) {
+          await (order as any).createItem({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            product_id: item.productId,
+            quantity: item.quantity,
+          });
+        }
       }
-    );
+
+      await OrderModel.update(
+        {
+          customer_id: entity.customerId,
+          total: entity.total(),
+        },
+        {
+          where: {
+            id: entity.id,
+          },
+        }
+      );
+    } catch (err) {
+      throw new Error("Update Order Error");
+    }
   }
 
   async findAll(): Promise<Order[]> {
-    const orderModels = await OrderModel.findAll({include: [OrderItemModel]});
+    const orderModels = await OrderModel.findAll({ include: [OrderItemModel] });
 
     const orders = orderModels.map((orderModel) => {
       const order = new Order(
