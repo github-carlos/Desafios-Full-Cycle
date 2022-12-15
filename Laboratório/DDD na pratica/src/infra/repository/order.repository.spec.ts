@@ -4,6 +4,7 @@ import Customer from "../../domain/entity/customer";
 import Order from "../../domain/entity/order";
 import OrderItem from "../../domain/entity/order_item";
 import Product from "../../domain/entity/product";
+import EventDispatcher from "../../domain/event/@shared/event-dispatcher";
 import CustomerModel from "../db/sequelize/models/customer.model";
 import { OrderItemModel, OrderModel } from "../db/sequelize/models/order.model";
 import ProductModel from "../db/sequelize/models/product";
@@ -12,7 +13,8 @@ import OrderRepository from "./order.repository";
 import ProductRepository from "./product.repository";
 
 async function makeOrder(orderItems: Array<OrderItem>): Promise<Order> {
-  const customerRepository = new CustomerRepository();
+  const eventDispatcher = new EventDispatcher();
+  const customerRepository = new CustomerRepository(eventDispatcher);
   const customer = new Customer("123", "Carlos");
   const address = new Address("Street 1", 1, "Zipcode", "City");
   customer.changeAddress(address);
@@ -123,7 +125,8 @@ describe("Order repository test", () => {
   });
 
   it("should find all orders", async() => {
-  const customerRepository = new CustomerRepository();
+  const eventDispatcher = new EventDispatcher();
+  const customerRepository = new CustomerRepository(eventDispatcher);
   const customer = new Customer("123", "Carlos");
   const address = new Address("Street 1", 1, "Zipcode", "City");
   customer.changeAddress(address);

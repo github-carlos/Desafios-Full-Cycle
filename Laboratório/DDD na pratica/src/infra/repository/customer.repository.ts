@@ -1,9 +1,14 @@
 import Address from "../../domain/entity/address";
 import Customer from "../../domain/entity/customer";
+import EventDispatcherInterface from "../../domain/event/@shared/event-dispatcher.interface";
+import CustomerCreatedEvent from "../../domain/event/customer/customer-created.event";
 import CustomerRepositoryInterface from "../../domain/repository/customer.repository";
 import CustomerModel from "../db/sequelize/models/customer.model";
 
 export default class CustomerRepository implements CustomerRepositoryInterface {
+
+  constructor(private eventDispatcher: EventDispatcherInterface) {}
+
   async create(entity: Customer): Promise<void> {
     await CustomerModel.create({
       id: entity.id,
@@ -15,6 +20,8 @@ export default class CustomerRepository implements CustomerRepositoryInterface {
       active: entity.isActive(),
       rewardPoints: entity.rewardPoints,
     });
+
+    this.eventDispatcher.notify(new CustomerCreatedEvent(JSON.stringify(entity)))
   }
 
   async update(entity: Customer): Promise<void> {

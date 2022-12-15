@@ -1,11 +1,23 @@
 import { Sequelize } from "sequelize-typescript";
 import Address from "../../domain/entity/address";
 import Customer from "../../domain/entity/customer";
+import EventDispatcher from "../../domain/event/@shared/event-dispatcher";
+import CustomerCreatedEvent from "../../domain/event/customer/customer-created.event";
+import Log1MessageWhenCustomerIsCreatedHandler from "../../domain/event/customer/handlers/log-1-message-when-customer-is-created";
+import Log2MessageWhenCustomerIsCreatedHandler from "../../domain/event/customer/handlers/log-2-message-when-customer-is-created copy";
 import CustomerModel from "../db/sequelize/models/customer.model";
 import CustomerRepository from "./customer.repository";
 
 describe("Customer repository test", () => {
   let sequelize: Sequelize;
+  const eventDispatcher = new EventDispatcher();
+  const customerCreatedHandler1 = new Log1MessageWhenCustomerIsCreatedHandler()
+  const customerCreatedHandler2 = new Log2MessageWhenCustomerIsCreatedHandler()
+
+  beforeAll(() => {
+    eventDispatcher.register('CustomerCreatedEvent', customerCreatedHandler1)
+    eventDispatcher.register('CustomerCreatedEvent', customerCreatedHandler2)
+  });
 
   beforeEach(async () => {
     sequelize = new Sequelize({
@@ -23,8 +35,15 @@ describe("Customer repository test", () => {
     await sequelize.close();
   });
 
-  it("should create a customer", async () => {
-    const customerRepository = new CustomerRepository();
+  it("should create a customer and dispatch CustomerCreated event", async () => {
+    jest.useFakeTimers()
+    .setSystemTime(new Date());
+
+    const eventSpy = jest.spyOn(eventDispatcher, "notify")
+    const handler1Spy = jest.spyOn(customerCreatedHandler1, 'handle');
+    const handler2Spy = jest.spyOn(customerCreatedHandler2, 'handle');
+
+    const customerRepository = new CustomerRepository(eventDispatcher);
     const customer = new Customer("123", "Customer 1");
     const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer.changeAddress(address);
@@ -32,6 +51,9 @@ describe("Customer repository test", () => {
 
     const customerModel = await CustomerModel.findOne({ where: { id: "123" } });
 
+    expect(eventSpy).toHaveBeenCalledWith(new CustomerCreatedEvent(JSON.stringify(customer)));
+    expect(handler1Spy).toHaveBeenCalled();
+    expect(handler2Spy).toHaveBeenCalled();
     expect(customerModel.toJSON()).toStrictEqual({
       id: "123",
       name: customer.name,
@@ -45,7 +67,7 @@ describe("Customer repository test", () => {
   });
 
   it("should update a customer", async () => {
-    const customerRepository = new CustomerRepository();
+    const customerRepository = new CustomerRepository(eventDispatcher);
     const customer = new Customer("123", "Customer 1");
     const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer.changeAddress(address);
@@ -68,7 +90,7 @@ describe("Customer repository test", () => {
   });
 
   it("should find a customer", async () => {
-    const customerRepository = new CustomerRepository();
+    const customerRepository = new CustomerRepository(eventDispatcher);
     const customer = new Customer("123", "Customer 1");
     const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer.changeAddress(address);
@@ -80,7 +102,7 @@ describe("Customer repository test", () => {
   });
 
   it("should throw an error when customer is not found", async () => {
-    const customerRepository = new CustomerRepository();
+    const customerRepository = new CustomerRepository(eventDispatcher);
 
     expect(async () => {
       await customerRepository.find("456ABC");
@@ -88,7 +110,7 @@ describe("Customer repository test", () => {
   });
 
   it("should find all customers", async () => {
-    const customerRepository = new CustomerRepository();
+    const customerRepository = new CustomerRepository(eventDispatcher);
     const customer1 = new Customer("123", "Customer 1");
     const address1 = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer1.changeAddress(address1);

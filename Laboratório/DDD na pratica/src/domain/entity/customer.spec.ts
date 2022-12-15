@@ -2,6 +2,13 @@ import Address from "./address";
 import Customer from "./customer";
 
 describe('#Customer', () => {
+
+  it('should create a customer and dispatch CustomerCreated', () => {
+    const data = {id: '123', name: 'Carlos', active: true, address: new Address('123', 10, '1234', 'city')}
+    const customer = new Customer(data.id, data.name, data.address, data.active)
+    expect(customer).toBeInstanceOf(Customer)
+  });
+
   it('should throw error when id is empty', () => {
     expect(() => new Customer('', 'Carlos', new Address('123', 10, '1234', 'city'), true)).toThrowError();
   });
