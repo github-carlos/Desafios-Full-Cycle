@@ -2,8 +2,10 @@ import { Sequelize } from "sequelize-typescript";
 import Address from "../../domain/entity/address";
 import Customer from "../../domain/entity/customer";
 import EventDispatcher from "../../domain/event/@shared/event-dispatcher";
+import CustomerAddressChangedEvent from "../../domain/event/customer/customer-address-changed.event";
 import CustomerCreatedEvent from "../../domain/event/customer/customer-created.event";
 import Log1MessageWhenCustomerIsCreatedHandler from "../../domain/event/customer/handlers/log-1-message-when-customer-is-created";
+import Log1MessageWhenCustomerAddressChangedHandler from "../../domain/event/customer/handlers/log-1-messge-when-customer-address-changed";
 import Log2MessageWhenCustomerIsCreatedHandler from "../../domain/event/customer/handlers/log-2-message-when-customer-is-created copy";
 import CustomerModel from "../db/sequelize/models/customer.model";
 import CustomerRepository from "./customer.repository";
@@ -13,10 +15,12 @@ describe("Customer repository test", () => {
   const eventDispatcher = new EventDispatcher();
   const customerCreatedHandler1 = new Log1MessageWhenCustomerIsCreatedHandler()
   const customerCreatedHandler2 = new Log2MessageWhenCustomerIsCreatedHandler()
+  const customerCreatedHandler3 = new Log1MessageWhenCustomerAddressChangedHandler()
 
   beforeAll(() => {
     eventDispatcher.register('CustomerCreatedEvent', customerCreatedHandler1)
     eventDispatcher.register('CustomerCreatedEvent', customerCreatedHandler2)
+    eventDispatcher.register('CustomerAddressChangedEvent', customerCreatedHandler3)
   });
 
   beforeEach(async () => {
@@ -64,6 +68,29 @@ describe("Customer repository test", () => {
       zipcode: address.zip,
       city: address.city,
     });
+  });
+
+  it("should change customer address and dispatch event", async() => {
+     jest.useFakeTimers()
+    .setSystemTime(new Date());
+    
+    const eventSpy = jest.spyOn(eventDispatcher, "notify");
+    const handleSpy = jest.spyOn(customerCreatedHandler3, 'handle');
+
+    const customerRepository = new CustomerRepository(eventDispatcher);
+    const customer = new Customer("123", "Customer 1");
+    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+    customer.changeAddress(address);
+
+    await customerRepository.create(customer);
+    const newAddress = new Address("Another Street", 2, "Zipcode 2", "New City");
+    customer.changeAddress(newAddress);
+    await customerRepository.changeAddress(customer);
+    const customerFromDb = await customerRepository.find(customer.id);
+
+    expect(customerFromDb.Address).toEqual(newAddress);
+    expect(handleSpy).toBeCalled();
+    expect(eventSpy).toHaveBeenCalledWith(new CustomerAddressChangedEvent(customer));
   });
 
   it("should update a customer", async () => {
