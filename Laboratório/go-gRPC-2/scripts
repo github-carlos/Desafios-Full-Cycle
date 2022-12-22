@@ -1,0 +1,3 @@
+# gerar os arquivos de protobuf e grpc
+export PATH="$PATH:$(go env GOPATH)/bin"
+protoc --go_out=. --go-grpc_out=. proto/course_category.proto
