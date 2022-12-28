@@ -7,6 +7,7 @@ import (
 	"example.com/m/internal/database"
 	"example.com/m/internal/pb"
 	"example.com/m/internal/service"
+	_ "github.com/mattn/go-sqlite3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -29,6 +30,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	// registrando nosso servico no grpc server
 	pb.RegisterCategoryServiceServer(grpcServer, categoryService)
+	// necessario para usar no cliente do server
 	reflection.Register(grpcServer)
 
 	// abrindo uma conexao tcp
