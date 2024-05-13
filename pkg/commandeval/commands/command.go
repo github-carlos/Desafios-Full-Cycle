@@ -1,6 +1,6 @@
 package commands
 
-type Command interface {
-	Handler(string) string
+type Commander interface {
+	Handler(string)
   GetKey() string
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"trevas-bot/pkg/commandeval"
+	"trevas-bot/pkg/commandextractor"
 
 	"go.mau.fi/whatsmeow/types/events"
 )
@@ -11,29 +12,18 @@ var CommandEval = commandeval.NewCommandEval()
 
 func MessageHandler(eventMessage *events.Message) {
   fmt.Println("Mensagem Recebida:", eventMessage)
-  text := extractText(eventMessage)
-  fmt.Println(text)
 
-  if err := CommandEval.Handle(text); err != nil {
+  commandInput, err := commandextractor.Extract(eventMessage)
+
+  if err != nil {
+    fmt.Println("Error:", err)
+    return
+  }
+
+  fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.Sender)
+
+  if err := CommandEval.Handle(commandInput); err != nil {
     fmt.Println(err)
   }
 }
 
-func extractText(eventMessage *events.Message) string {
-  message := eventMessage.Message;
-  text := message.GetConversation()
-
-  if text == "" {
-    text = message.ImageMessage.GetCaption()
-  }
-
-  if text == "" {
-    text = message.VideoMessage.GetCaption()
-  }
-
-  if text == "" {
-    text = message.ExtendedTextMessage.GetText()
-  }
-
-  return text
-}

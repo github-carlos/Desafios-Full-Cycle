@@ -1,15 +1,13 @@
 package commandeval
 
 import (
-	"errors"
-	"fmt"
-	"strings"
 	"trevas-bot/pkg/commandeval/commands"
+	"trevas-bot/pkg/commandextractor"
 )
 
 type CommandEval struct {
 	commandPrefix byte
-	commands      map[string]commands.Command
+	commands      map[string]commands.Commander
 }
 
 func NewCommandEval() *CommandEval {
@@ -17,20 +15,15 @@ func NewCommandEval() *CommandEval {
 
 	const commandPrefix = '!'
 
-	commands := make(map[string]commands.Command)
+	commands := make(map[string]commands.Commander)
 
 	commands[ping.GetKey()] = ping
 
 	return &CommandEval{commandPrefix, commands}
 }
 
-func (c CommandEval) Handle(message string) error {
-	clearedMessage := strings.Trim(message, " ")
-	fmt.Println("Cleared Message:", clearedMessage)
-
-	if clearedMessage[0] != c.commandPrefix {
-    return errors.New("Comando Inválido!")
-	}
-
-  return nil
+func (c CommandEval) Handle(commandInput commandextractor.CommandInput) error {
+	// TODO: extractKey
+	const key = "ping"
+	return nil
 }
