@@ -7,24 +7,22 @@ import (
 )
 
 type PingCommand struct {
-  key string
-  platform platform.WhatsAppIntegration
+	key      string
+	platform platform.WhatsAppIntegration
 }
 
 func (p PingCommand) Handler(input commandextractor.CommandInput) {
-  fmt.Println("Running Ping Command")
-  error := p.platform.SendReply("pong", &input.EventMessage)
-  if error != nil {
-    fmt.Println("Error sending Ping command")
-  }
+	fmt.Println("Running Ping Command")
+	error := p.platform.SendReply("pong", &input.EventMessage)
+	if error != nil {
+		fmt.Println("Error sending Ping command")
+	}
 }
 
 func (c PingCommand) GetKey() string {
-  return c.key
+	return c.key
 }
 
 func NewPingCommand() *PingCommand {
-  return &PingCommand{key: "ping"}
+	return &PingCommand{key: "ping"}
 }
-
-

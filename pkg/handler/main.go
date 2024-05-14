@@ -6,7 +6,7 @@ import (
 
 func EventHandler(evt interface{}) {
 	switch v := evt.(type) {
-  case *events.Message:
-    go MessageHandler(v)
+	case *events.Message:
+		go MessageHandler(v)
 	}
 }

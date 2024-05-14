@@ -10,35 +10,35 @@ import (
 type CommandEval struct {
 	commandPrefix byte
 	commands      map[string]commands.Commander
-  platform platform.WhatsAppIntegration
+	platform      platform.WhatsAppIntegration
 }
 
 func NewCommandEval() *CommandEval {
 	ping := commands.NewPingCommand()
-  bola := commands.NewBolaCommand()
+	bola := commands.NewBolaCommand()
 
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
 
 	commands[ping.GetKey()] = ping
-  commands[bola.GetKey()] = bola
+	commands[bola.GetKey()] = bola
 
-  whatsApp := platform.NewWhatsAppIntegration()
+	whatsApp := platform.NewWhatsAppIntegration()
 
 	return &CommandEval{commandPrefix, commands, *whatsApp}
 }
 
 func (c CommandEval) Handle(commandInput *commandextractor.CommandInput) error {
 
-  command := c.commands[commandInput.Command]
+	command := c.commands[commandInput.Command]
 
-  if command == nil {
-    fmt.Println("Command not found")
-    return nil
-  }
+	if command == nil {
+		fmt.Println("Command not found")
+		return nil
+	}
 
-  command.Handler(*commandInput)
+	command.Handler(*commandInput)
 
 	return nil
 }

@@ -23,7 +23,7 @@ const (
 	LoveReaction      string = "❤️"
 	LikeReaction      string = "👍"
 	DislikeReaction   string = "👎"
-  BolaReacton string = "⚽"
+	BolaReacton       string = "⚽"
 )
 
 type WhatsAppIntegration struct{}
@@ -87,6 +87,11 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 			FileSha256:    uploadedSticker.FileSHA256,
 			FileLength:    proto.Uint64(uploadedSticker.FileLength),
 			StickerSentTs: proto.Int64(time.Now().Unix()),
+			ContextInfo: &waProto.ContextInfo{
+				StanzaId:      proto.String(eventMessage.Info.ID),
+				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
+				QuotedMessage: eventMessage.Message,
+			},
 		},
 	}
 
@@ -96,7 +101,7 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 		return errors.New("Ocorreu um erro ao enviar a figurinha... por favor, tente novamente.")
 	}
 
-  return nil
+	return nil
 }
 
 func (w WhatsAppIntegration) SendImg(imgBytes []byte, animated bool, eventMessage *events.Message) error {
@@ -116,6 +121,11 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, animated bool, eventMessag
 			FileEncSha256: uploadedImg.FileEncSHA256,
 			FileSha256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
+			ContextInfo: &waProto.ContextInfo{
+				StanzaId:      proto.String(eventMessage.Info.ID),
+				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
+				QuotedMessage: eventMessage.Message,
+			},
 		},
 	}
 
@@ -125,7 +135,7 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, animated bool, eventMessag
 		return errors.New("Ocorreu um erro ao enviar a imagem... por favor, tente novamente.")
 	}
 
-  return nil
+	return nil
 }
 
 func (w WhatsAppIntegration) SendReaction(eventMessage *events.Message, reaction string) {

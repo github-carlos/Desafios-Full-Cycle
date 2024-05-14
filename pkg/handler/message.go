@@ -11,23 +11,22 @@ import (
 var CommandEval = commandeval.NewCommandEval()
 
 func MessageHandler(eventMessage *events.Message) {
-  fmt.Println("Mensagem Recebida:", eventMessage)
+	fmt.Println("Mensagem Recebida:", eventMessage)
 
-  commandInput, err := commandextractor.Extract(eventMessage)
+	commandInput, err := commandextractor.Extract(eventMessage)
 
-  if err != nil {
-    fmt.Println("Error:", err)
-    return
-  }
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
 
-  if commandInput.Command == "" {
-    return
-  }
+	if commandInput.Command == "" {
+		return
+	}
 
-  fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.EventMessage.Info.Sender)
+	fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.EventMessage.Info.Sender)
 
-  if err := CommandEval.Handle(commandInput); err != nil {
-    fmt.Println(err)
-  }
+	if err := CommandEval.Handle(commandInput); err != nil {
+		fmt.Println(err)
+	}
 }
-

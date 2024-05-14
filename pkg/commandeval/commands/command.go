@@ -6,5 +6,5 @@ import (
 
 type Commander interface {
 	Handler(commandextractor.CommandInput)
-  GetKey() string
+	GetKey() string
 }

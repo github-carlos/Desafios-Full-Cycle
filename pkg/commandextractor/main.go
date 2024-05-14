@@ -7,9 +7,9 @@ import (
 )
 
 type CommandInput struct {
-  Command string
-  Payload interface{}
-  EventMessage events.Message
+	Command      string
+	Payload      interface{}
+	EventMessage events.Message
 }
 
 const commandPrefix = '!'
@@ -21,18 +21,18 @@ func Extract(eventMessage *events.Message) (*CommandInput, error) {
 		return &CommandInput{}, nil
 	}
 
-  if text[0] != commandPrefix {
-    return &CommandInput{}, nil
-  }
+	if text[0] != commandPrefix {
+		return &CommandInput{}, nil
+	}
 
-  command := extractCommand(text)
-  payload := extractPayload(text)
+	command := extractCommand(text)
+	payload := extractPayload(text)
 
 	return &CommandInput{
-    Command: command,
-    Payload: payload,
-    EventMessage: *eventMessage,
-  }, nil
+		Command:      command,
+		Payload:      payload,
+		EventMessage: *eventMessage,
+	}, nil
 }
 
 func extractText(eventMessage *events.Message) string {
@@ -54,13 +54,12 @@ func extractText(eventMessage *events.Message) string {
 }
 
 func extractCommand(text string) string {
-  splitedText := strings.Split(text, " ")
-  return splitedText[0][1:]
+	splitedText := strings.Split(text, " ")
+	return splitedText[0][1:]
 }
 
 func extractPayload(text string) string {
-  splitedText := strings.Split(text, " ")
+	splitedText := strings.Split(text, " ")
 
-  return strings.Join(splitedText[1:], " ")
+	return strings.Join(splitedText[1:], " ")
 }
-
