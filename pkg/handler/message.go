@@ -20,7 +20,11 @@ func MessageHandler(eventMessage *events.Message) {
     return
   }
 
-  fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.Sender)
+  if commandInput.Command == "" {
+    return
+  }
+
+  fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.EventMessage.Info.Sender)
 
   if err := CommandEval.Handle(commandInput); err != nil {
     fmt.Println(err)

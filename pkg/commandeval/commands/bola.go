@@ -1,6 +1,11 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"trevas-bot/pkg/commandextractor"
+	"trevas-bot/pkg/platform"
+)
 
 var phrases = []string{
     "Boa, Milhaça!",
@@ -30,11 +35,17 @@ var phrases = []string{
 
 type BolaCommand struct {
   key string
+  Platform platform.WhatsAppIntegration
 }
 
-func (BolaCommand) Handler(text string) {
+func (b BolaCommand) Handler(commandInput commandextractor.CommandInput) {
   fmt.Println("Running Bola Command")
-  fmt.Println(phrases[0])
+  randomPhrase := rand.Intn(len(phrases))
+  error := b.Platform.SendReply(phrases[randomPhrase], &commandInput.EventMessage)
+
+  if error != nil {
+    fmt.Println("Error sending message")
+  }
 }
 
 func (c BolaCommand) GetKey() string {

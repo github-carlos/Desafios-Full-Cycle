@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"trevas-bot/pkg/handler"
+	"trevas-bot/pkg/platform"
 
 	_ "github.com/mattn/go-sqlite3"
 	qrterminal "github.com/mdp/qrterminal/v3"
@@ -30,6 +31,9 @@ func main() {
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 	client.AddEventHandler(handler.EventHandler)
+
+  // Setting Client
+  platform.SetWhatsAppClient(client)
 
 	if client.Store.ID == nil {
 		// No ID stored, new login
