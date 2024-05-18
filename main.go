@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	dbLog := waLog.Stdout("Database", "DEBUG", true)
+	dbLog := waLog.Stdout("Database", "ERROR", true)
 	// Make sure you add appropriate DB connector imports, e.g. github.com/mattn/go-sqlite3 for SQLite
 	container, err := sqlstore.New("sqlite3", "file:databases/client_connection.db?_foreign_keys=on", dbLog)
 	if err != nil {
@@ -28,12 +28,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	clientLog := waLog.Stdout("Client", "DEBUG", true)
+	clientLog := waLog.Stdout("Client", "ERROR", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 	client.AddEventHandler(handler.EventHandler)
 
-  // Setting Client
-  platform.SetWhatsAppClient(client)
+	// Setting Client
+	platform.SetWhatsAppClient(client)
 
 	if client.Store.ID == nil {
 		// No ID stored, new login
@@ -67,5 +67,3 @@ func main() {
 
 	client.Disconnect()
 }
-
-

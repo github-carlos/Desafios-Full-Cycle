@@ -16,13 +16,23 @@ type CommandEval struct {
 func NewCommandEval() *CommandEval {
 	ping := commands.NewPingCommand()
 	bola := commands.NewBolaCommand()
-
+	sticker := commands.NewStickerCommand()
+  download := commands.NewDownloadCommand()
+  ze := commands.NewZeCommand()
+  viadometro := commands.NewViadometroCommand()
+  top5 := commands.NewTop5Command()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
 
 	commands[ping.GetKey()] = ping
 	commands[bola.GetKey()] = bola
+	commands[sticker.GetKey()] = sticker
+	commands[download.GetKey()] = download
+  commands[ze.GetKey()] = ze
+  commands["ze"] = ze
+  commands[viadometro.GetKey()] = viadometro
+  commands[top5.GetKey()] = top5
 
 	whatsApp := platform.NewWhatsAppIntegration()
 

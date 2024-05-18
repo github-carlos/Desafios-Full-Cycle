@@ -8,7 +8,7 @@ import (
 
 type CommandInput struct {
 	Command      string
-	Payload      interface{}
+	Payload     string 
 	EventMessage events.Message
 }
 

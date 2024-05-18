@@ -13,10 +13,7 @@ type PingCommand struct {
 
 func (p PingCommand) Handler(input commandextractor.CommandInput) {
 	fmt.Println("Running Ping Command")
-	error := p.platform.SendReply("pong", &input.EventMessage)
-	if error != nil {
-		fmt.Println("Error sending Ping command")
-	}
+	go p.platform.SendReply("pong", &input.EventMessage)
 }
 
 func (c PingCommand) GetKey() string {
