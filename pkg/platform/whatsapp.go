@@ -1,13 +1,17 @@
 package platform
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"image/jpeg"
+	"net/http"
 	"os"
 	"time"
 	"trevas-bot/pkg/platform/types"
 
+	"github.com/nfnt/resize"
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
 	"go.mau.fi/whatsmeow/types/events"
@@ -135,23 +139,42 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 }
 
 func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Message) error {
-
-  fmt.Println("Uploading image", imgBytes)
 	uploadedImg, err := Client.Upload(context.Background(), imgBytes, whatsmeow.MediaImage)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao fazer o upload do imagem... por favor, tente novamente.")
 	}
 
+  // decode jpeg into image.Image
+  decodedImg, err := jpeg.Decode(bytes.NewReader(imgBytes))
+
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
+  outPath := fmt.Sprintf("%d.jpg", time.Now().Unix())
+  out, err := os.Create(outPath)
+  if err != nil {
+    fmt.Println(err)
+  }
+  defer out.Close()
+
+  // write new image to file
+  jpeg.Encode(out, m, nil)
+
+  thumbnailBytes, err := os.ReadFile(outPath)
+
 	msgToSend := &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
 			Url:           proto.String(uploadedImg.URL),
 			DirectPath:    proto.String(uploadedImg.DirectPath),
 			MediaKey:      uploadedImg.MediaKey,
-			Mimetype:      proto.String("image/webp"),
+			Mimetype:      proto.String(http.DetectContentType(imgBytes)),
 			FileEncSha256: uploadedImg.FileEncSHA256,
 			FileSha256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
+      JpegThumbnail: thumbnailBytes,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaId:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
@@ -169,15 +192,17 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 	return nil
 }
 
-func (w WhatsAppIntegration) SendVideo(videoBytes []byte, eventMessage *events.Message) error {
+type SendVideoInput struct {
+  VideoBytes []byte
+  Thumbnail []byte
+}
+func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *events.Message) error {
 
-  fmt.Println(len(videoBytes))
-
-  if (len(videoBytes) > 50 * 1024 * 1024) {
+  if (len(input.VideoBytes) > 50 * 1024 * 1024) {
     return errors.New("Video muito grande para fazer Upload.")
   }
 
-	uploadedVideo, err := Client.Upload(context.Background(), videoBytes, whatsmeow.MediaVideo)
+	uploadedVideo, err := Client.Upload(context.Background(), input.VideoBytes, whatsmeow.MediaVideo)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao fazer o upload do video... por favor, tente novamente.")
@@ -192,6 +217,7 @@ func (w WhatsAppIntegration) SendVideo(videoBytes []byte, eventMessage *events.M
 			FileEncSha256: uploadedVideo.FileEncSHA256,
 			FileSha256:    uploadedVideo.FileSHA256,
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
+      JpegThumbnail: input.Thumbnail,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaId:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),

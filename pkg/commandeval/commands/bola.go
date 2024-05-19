@@ -37,10 +37,8 @@ var phrases = []string{
 }
 
 var types = []string{
-	// "img",
+	"img",
 	"sticker",
-	"text",
-	"text",
 	"text",
 }
 
@@ -55,6 +53,7 @@ func (b BolaCommand) Handler(commandInput commandextractor.CommandInput) {
 	b.Platform.SendReaction(&commandInput.EventMessage, platform.BolaReacton)
 
 	messageType := types[rand.Intn(len(types))]
+
 
 	if messageType == "text" {
 		b.sendRandomPhrase(&commandInput)
@@ -99,7 +98,7 @@ func (b BolaCommand) sendRandomImageSticker(commandInput *commandextractor.Comma
 		return
 	}
 
-	err = b.Platform.SendImg(webp, &commandInput.EventMessage)
+	err = b.Platform.SendImg(img, &commandInput.EventMessage)
 
 	if err != nil {
 		fmt.Println("Failing sending message")

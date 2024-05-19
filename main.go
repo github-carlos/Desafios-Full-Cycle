@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	clientLog := waLog.Stdout("Client", "ERROR", true)
+	clientLog := waLog.Stdout("Client", "INFO", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 	client.AddEventHandler(handler.EventHandler)
 

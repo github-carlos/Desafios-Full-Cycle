@@ -152,7 +152,7 @@ func getProgressBar(value int) string {
 
   blocks := "["
 
-  for i := 0; i <= numOfBlocks; i++ {
+  for i := 0; i < numOfBlocks; i++ {
     blocks += "■"
   }
 

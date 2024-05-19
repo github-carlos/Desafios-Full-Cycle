@@ -59,7 +59,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
         return
       }
 
-      err = p.platform.SendVideo(videoBytes, &input.EventMessage)
+      err = p.platform.SendVideo(platform.SendVideoInput{VideoBytes: videoBytes}, &input.EventMessage)
 
       if err != nil {
         go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)
