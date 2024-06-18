@@ -16,6 +16,7 @@ var phrasesZe = []string{
 	"Alto em \"Saúde Adicionada\" 👍🏼",
 	"Coldplay é bosta",
 	"Chorão do Charlie Brown Jr era tão foda e tão sábio que morreu cagado e vomitado de tanto usar droga.",
+  "🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕 VA TOMA NO CU L RAMOS BURRO DO CARALHO 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕",
 }
 
 type ZeCommand struct {

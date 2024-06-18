@@ -38,7 +38,8 @@ func (p PornCommand) Handler(input commandextractor.CommandInput) {
   go p.platform.SendReaction(&input.EventMessage, platform.LoadingReaction)
   defer res.Body.Close()
   if res.StatusCode != 200 {
-    fmt.Println("status code error: %d %s", res.StatusCode, res.Status)
+    go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)
+    p.platform.SendReply("Ocorreu um erro ao baixar mídia. Tente novamente.", &input.EventMessage)
     return
   }
 

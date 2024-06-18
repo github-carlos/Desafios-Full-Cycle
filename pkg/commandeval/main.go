@@ -21,10 +21,12 @@ func NewCommandEval() *CommandEval {
   ze := commands.NewZeCommand()
   viadometro := commands.NewViadometroCommand()
   top5 := commands.NewTop5Command()
-  porn := commands.NewPornCommand()
+  // porn := commands.NewPornCommand()
   ramos := commands.NewRamosCommand()
   meme := commands.NewMemeCommand()
   gen := commands.NewGenCommand()
+  sorteio := commands.NewSorteioCommand()
+  video := commands.NewVideoCommand()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
@@ -37,10 +39,12 @@ func NewCommandEval() *CommandEval {
   commands["ze"] = ze
   commands[viadometro.GetKey()] = viadometro
   commands[top5.GetKey()] = top5
-  commands[porn.GetKey()] = porn
+  // commands[porn.GetKey()] = porn
   commands[ramos.GetKey()] = ramos
   commands[meme.GetKey()] = meme
   commands[gen.GetKey()] = gen
+  commands[sorteio.GetKey()] = sorteio
+  commands[video.GetKey()] = video
 
 	whatsApp := platform.NewWhatsAppIntegration()
 

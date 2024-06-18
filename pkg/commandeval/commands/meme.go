@@ -61,9 +61,6 @@ func (p MemeCommand) Handler(input commandextractor.CommandInput) {
 	fmt.Printf("Upvotes: %d\n", memeResponse.Ups)
 
   p.platform.SendText(platformTypes.SendTextInput{Text: memeResponse.Title}, &input.EventMessage)
-
-
-
 }
 
 func (c MemeCommand) GetKey() string {

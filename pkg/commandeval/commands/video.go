@@ -1,3 +1,4 @@
+// yt-dlp -f "bestvideo[filesize<20M]" "ytsearch:filosofo piton" 
 package commands
 
 import (
@@ -11,13 +12,17 @@ import (
 	"trevas-bot/pkg/platform"
 )
 
-type DownloadCommand struct {
+type VideoCommand struct {
 	key      string
 	platform platform.WhatsAppIntegration
 }
 
-func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
-	fmt.Println("Running Download Command")
+func (p VideoCommand) Handler(input commandextractor.CommandInput) {
+	fmt.Println("Running Video Command")
+
+  // p.platform.SendReply("Comando desativado por enquanto.", &input.EventMessage)
+  // return;
+
   go p.platform.SendReaction(&input.EventMessage, platform.LoadingReaction)
 
   downloadPath := "temp/downloads/"
@@ -26,7 +31,10 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
   prefixFileName := fmt.Sprintf("%d", now.Unix())
   fileName := downloadPath + prefixFileName  + ".%(ext)s"
 
-  cmd := exec.Command("yt-dlp", "-vU", input.Payload, "--output", fileName, "--max-filesize", "50M", "--no-playlist")
+  searchVideo := fmt.Sprintf("ytsearch:%s", input.Payload)
+
+  cmd := exec.Command("yt-dlp", "-f", "bestvideo[filesize<20M][height<=?480]+bestaudio/best", searchVideo, "--output", fileName, "--no-playlist")
+
 
   err := cmd.Run()
 
@@ -60,7 +68,6 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
         return
       }
 
-      if strings.HasSuffix(downloadedFilePath, "webm") {
         videoBytes, err = converter.Webm2Mp4(videoBytes)
         
         if err != nil {
@@ -69,9 +76,9 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
           p.platform.SendReply("Não foi possível baixar o video.", &input.EventMessage)
           return
         }
-      }
 
       thumbVideo, _ := converter.GenThumbVideo(converter.GenThumbVideoInput{Video: videoBytes})
+      fmt.Println("THumbVideo", thumbVideo)
 
       err = p.platform.SendVideo(platform.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo}, &input.EventMessage)
 
@@ -87,12 +94,14 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
       break
     }
   }
+
 }
 
-func (c DownloadCommand) GetKey() string {
+func (c VideoCommand) GetKey() string {
 	return c.key
 }
 
-func NewDownloadCommand() *DownloadCommand {
-	return &DownloadCommand{key: "download"}
+func NewVideoCommand() *VideoCommand {
+	return &VideoCommand{key: "video"}
 }
+

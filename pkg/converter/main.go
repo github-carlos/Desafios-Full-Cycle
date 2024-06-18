@@ -51,8 +51,8 @@ func Img2Webp(image []byte) ([]byte, error) {
 
 func Webm2Mp4(webm []byte) ([]byte, error) {
 	now := time.Now()
-	inputPath := fmt.Sprintf("temp/%d.webm", now.Unix())
-	outputPath := fmt.Sprintf("temp/%d.mp4", now.Unix())
+	inputPath := fmt.Sprintf("temp/%d-temp.webm", now.Unix())
+	outputPath := fmt.Sprintf("temp/%d-temp.mp4", now.Unix())
 
 	err := os.WriteFile(inputPath, webm, 0644)
 
@@ -98,7 +98,7 @@ func GenThumbVideo(input GenThumbVideoInput) ([]byte, error) {
 	thumbnailPath := fmt.Sprintf("temp/%d.png", now.Unix())
 
 	if videoPath == "" {
-		videoPath := fmt.Sprintf("temp/%d.mp4", now.Unix())
+		videoPath = fmt.Sprintf("temp/%d.mp4", now.Unix())
 		err = os.WriteFile(videoPath, video, 0644)
 
 	}
