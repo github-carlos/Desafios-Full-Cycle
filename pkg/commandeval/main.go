@@ -27,6 +27,7 @@ func NewCommandEval() *CommandEval {
   gen := commands.NewGenCommand()
   sorteio := commands.NewSorteioCommand()
   video := commands.NewVideoCommand()
+  saude := commands.NewSaudeCommand()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
@@ -45,6 +46,7 @@ func NewCommandEval() *CommandEval {
   commands[gen.GetKey()] = gen
   commands[sorteio.GetKey()] = sorteio
   commands[video.GetKey()] = video
+  commands[saude.GetKey()] = saude
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
