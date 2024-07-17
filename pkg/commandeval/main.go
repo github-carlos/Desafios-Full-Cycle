@@ -30,6 +30,7 @@ func NewCommandEval() *CommandEval {
   saude := commands.NewSaudeCommand()
   img := commands.NewImgCommand()
   sexta := commands.NewSextaCommand()
+  lramos := commands.NewLRamosCommand()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
@@ -51,7 +52,7 @@ func NewCommandEval() *CommandEval {
   commands[saude.GetKey()] = saude
   commands[img.GetKey()] = img
   commands[sexta.GetKey()] = sexta
-  
+  commands[lramos.GetKey()] = lramos
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
