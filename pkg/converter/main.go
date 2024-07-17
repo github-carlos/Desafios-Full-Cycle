@@ -49,6 +49,42 @@ func Img2Webp(image []byte) ([]byte, error) {
 	return stickerBytes, nil
 }
 
+func Webp2Img(sticker []byte) ([]byte, error) {
+
+	now := time.Now()
+	inputPath := fmt.Sprintf("temp/%d.webp", now.Unix())
+	outputPath := fmt.Sprintf("temp/%d.jpg", now.Unix())
+
+	err := os.WriteFile(inputPath, sticker, 0644)
+
+	if err != nil {
+		fmt.Println("Error saving input to use in converter", err)
+		return nil, nil
+	}
+
+	cmd := exec.Command("ffmpeg", "-i", inputPath, outputPath)
+	if err := cmd.Run(); err != nil {
+		fmt.Println("Erro ao converter o arquivo:", err)
+		_ = os.Remove(inputPath)
+		_ = os.Remove(outputPath)
+		return nil, errors.New("Ocorreu um erro ao processar sua figurinha... por favor, tente novamente")
+	}
+
+	imageBytes, err := os.ReadFile(outputPath)
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return nil, errors.New("Ocorreu um erro ao processar sua figurinha... por favor, tente novamente")
+	}
+
+	// TODO por metadatas no sticker
+
+	_ = os.Remove(inputPath)
+	_ = os.Remove(outputPath)
+
+	return imageBytes, nil
+}
+
 func Webm2Mp4(webm []byte) ([]byte, error) {
 	now := time.Now()
 	inputPath := fmt.Sprintf("temp/%d-temp.webm", now.Unix())

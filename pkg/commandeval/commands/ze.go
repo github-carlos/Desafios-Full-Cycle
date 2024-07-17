@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"strconv"
 
 	"math/rand"
 	"trevas-bot/pkg/commandextractor"
@@ -18,10 +19,11 @@ var phrasesZe = []string{
 	"Chorão do Charlie Brown Jr era tão foda e tão sábio que morreu cagado e vomitado de tanto usar droga.",
   "🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕 VA TOMA NO CU L RAMOS BURRO DO CARALHO 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕",
   "L Ramos frequenta boate gay no Maranhão.",
-  "ThGTech possui mais de 500gb de porno infantil.",
+  "ThGTech possui mais de 500gb de Café Pelé.",
   "Miranda frequenta boate gay no interior de SP.",
   "LN desvia diariamente 65 marmitas entre 11 e 13h.",
   "L Ramos mora sozinho e recebe visitas diárias de machos pauzudos.",
+  "Caio frequenta cabarés todos os fins de semana na capital paulista.",
 }
 
 type ZeCommand struct {
@@ -33,12 +35,20 @@ func (b ZeCommand) Handler(commandInput commandextractor.CommandInput) {
 	fmt.Println("Running Ze Command")
 
 	b.sendRandomPhrase(&commandInput)
-
 }
 
 func (b ZeCommand) sendRandomPhrase(commandInput *commandextractor.CommandInput) {
-	randomPhrase := rand.Intn(len(phrasesZe))
-	go b.Platform.SendReply(phrasesZe[randomPhrase], &commandInput.EventMessage)
+  payload := commandInput.Payload;
+  convertedIndex, _ := strconv.Atoi(payload)
+
+  phraseIndex := 0;
+  if convertedIndex <= len(phrasesZe) && convertedIndex > 0 {
+    phraseIndex = convertedIndex - 1;
+  } else {
+    phraseIndex = rand.Intn(len(phrasesZe))
+  }
+
+	go b.Platform.SendReply(phrasesZe[phraseIndex], &commandInput.EventMessage)
 }
 
 func (c ZeCommand) GetKey() string {
