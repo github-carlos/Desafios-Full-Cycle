@@ -89,7 +89,7 @@ func (b BolaCommand) sendRandomImageSticker(commandInput *commandextractor.Comma
 	}
 
 	if !isImg {
-		err = b.Platform.SendSticker(webp, false, &commandInput.EventMessage)
+		err = b.Platform.SendSticker(webp, false, &commandInput.EventMessage, true)
 
 		if err != nil {
 			fmt.Println("Failing sending message")

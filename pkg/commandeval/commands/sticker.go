@@ -32,7 +32,7 @@ func (p StickerCommand) Handler(input commandextractor.CommandInput) {
     return
   }
 
-  err = p.platform.SendSticker(webpMedia, true, &input.EventMessage)
+  err = p.platform.SendSticker(webpMedia, true, &input.EventMessage, true)
 
   if err != nil {
     p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)

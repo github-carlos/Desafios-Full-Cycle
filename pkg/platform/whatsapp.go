@@ -29,7 +29,7 @@ const (
 	LikeReaction      string = "👍"
 	DislikeReaction   string = "👎"
 	BolaReacton       string = "⚽"
-  BullReaction      string = "🐂"
+	BullReaction      string = "🐂"
 )
 
 type WhatsAppIntegration struct{}
@@ -67,24 +67,23 @@ func (w WhatsAppIntegration) SendReply(text string, eventMessage *events.Message
 	fmt.Println("Message sent:", text)
 }
 
-
 func (w WhatsAppIntegration) SendText(input types.SendTextInput, eventMessage *events.Message) {
 	fmt.Println("Sending Text", eventMessage)
 
-  fmt.Println(eventMessage.Info.Sender.ToNonAD().String())
+	fmt.Println(eventMessage.Info.Sender.ToNonAD().String())
 
-  var mentions []string
+	var mentions []string
 
-  for _, mention := range input.Mentions {
-    mentions = append(mentions, fmt.Sprintf("%s@s.whatsapp.net", mention))
-  }
+	for _, mention := range input.Mentions {
+		mentions = append(mentions, fmt.Sprintf("%s@s.whatsapp.net", mention))
+	}
 
 	var msg = &waProto.Message{
 		ExtendedTextMessage: &waProto.ExtendedTextMessage{
 			Text: proto.String(input.Text),
-      ContextInfo: &waProto.ContextInfo{
-        MentionedJid: mentions,
-      },
+			ContextInfo: &waProto.ContextInfo{
+				MentionedJid: mentions,
+			},
 		},
 	}
 
@@ -97,16 +96,26 @@ func (w WhatsAppIntegration) SendText(input types.SendTextInput, eventMessage *e
 	fmt.Println("Message sent:", input)
 }
 
-func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eventMessage *events.Message) error {
+func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eventMessage *events.Message, reply bool) error {
 
-  if len(stickerBytes) > 1024 * 1024 {
-    return errors.New("O arquivo enviado é muito grande.")
-  }
+	if len(stickerBytes) > 1024*1024 {
+		return errors.New("O arquivo enviado é muito grande.")
+	}
 
 	uploadedSticker, err := Client.Upload(context.Background(), stickerBytes, whatsmeow.MediaImage)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao fazer o upload da imagem... por favor, tente novamente.")
+	}
+
+	var contextInfo waProto.ContextInfo
+
+	if reply {
+		contextInfo = waProto.ContextInfo{
+			StanzaId:      proto.String(eventMessage.Info.ID),
+			Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
+			QuotedMessage: eventMessage.Message,
+		}
 	}
 
 	msgToSend := &waProto.Message{
@@ -121,11 +130,7 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 			FileSha256:    uploadedSticker.FileSHA256,
 			FileLength:    proto.Uint64(uploadedSticker.FileLength),
 			StickerSentTs: proto.Int64(time.Now().Unix()),
-			ContextInfo: &waProto.ContextInfo{
-				StanzaId:      proto.String(eventMessage.Info.ID),
-				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
-				QuotedMessage: eventMessage.Message,
-			},
+			ContextInfo:   &contextInfo,
 		},
 	}
 
@@ -145,25 +150,29 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 		return errors.New("Ocorreu um erro ao fazer o upload do imagem... por favor, tente novamente.")
 	}
 
-  // decode jpeg into image.Image
-  decodedImg, err := jpeg.Decode(bytes.NewReader(imgBytes))
+	// decode jpeg into image.Image
+	decodedImg, err := jpeg.Decode(bytes.NewReader(imgBytes))
 
-  if err != nil {
-    fmt.Println(err)
-  }
+	if err != nil {
+		fmt.Println(err)
+	}
 
-  m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
-  outPath := fmt.Sprintf("%d.jpg", time.Now().Unix())
-  out, err := os.Create(outPath)
-  if err != nil {
-    fmt.Println(err)
-  }
-  defer out.Close()
+	m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
+	outPath := fmt.Sprintf("temp/images/%d.jpg", time.Now().Unix())
+	out, err := os.Create(outPath)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-  // write new image to file
-  jpeg.Encode(out, m, nil)
+	defer func() {
+		out.Close()
+		os.Remove(outPath)
+	}()
 
-  thumbnailBytes, err := os.ReadFile(outPath)
+	// write new image to file
+	jpeg.Encode(out, m, nil)
+
+	thumbnailBytes, err := os.ReadFile(outPath)
 
 	msgToSend := &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
@@ -174,7 +183,7 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 			FileEncSha256: uploadedImg.FileEncSHA256,
 			FileSha256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
-      JpegThumbnail: thumbnailBytes,
+			JpegThumbnail: thumbnailBytes,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaId:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
@@ -188,19 +197,20 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao enviar a imagem... por favor, tente novamente.")
 	}
-  fmt.Println("Imagem enviada com sucesso!")
+	fmt.Println("Imagem enviada com sucesso!")
 	return nil
 }
 
 type SendVideoInput struct {
-  VideoBytes []byte
-  Thumbnail []byte
+	VideoBytes []byte
+	Thumbnail  []byte
 }
+
 func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *events.Message) error {
 
-  if (len(input.VideoBytes) > 50 * 1024 * 1024) {
-    return errors.New("Video muito grande para fazer Upload.")
-  }
+	if len(input.VideoBytes) > 50*1024*1024 {
+		return errors.New("Video muito grande para fazer Upload.")
+	}
 
 	uploadedVideo, err := Client.Upload(context.Background(), input.VideoBytes, whatsmeow.MediaVideo)
 	if err != nil {
@@ -217,7 +227,7 @@ func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *event
 			FileEncSha256: uploadedVideo.FileEncSHA256,
 			FileSha256:    uploadedVideo.FileSHA256,
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
-      JpegThumbnail: input.Thumbnail,
+			JpegThumbnail: input.Thumbnail,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaId:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
@@ -231,7 +241,7 @@ func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *event
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao enviar o video... por favor, tente novamente.")
 	}
-  fmt.Println("video enviado com sucesso!")
+	fmt.Println("video enviado com sucesso!")
 	return nil
 }
 
@@ -245,52 +255,66 @@ func (w WhatsAppIntegration) SendReaction(eventMessage *events.Message, reaction
 
 func (w WhatsAppIntegration) ExtractMediaBytes(eventMessage *events.Message) ([]byte, error) {
 
+	imageMedia := GetImageMessage(eventMessage)
+	var videoMedia *waProto.VideoMessage
 
-  imageMedia := GetImageMessage(eventMessage)
-  var videoMedia *waProto.VideoMessage
+	if imageMedia == nil {
+		videoMedia = GetVideoMessage(eventMessage)
+	}
 
-  if imageMedia == nil {
-    videoMedia = GetVideoMessage(eventMessage)
-  }
+	if imageMedia == nil && videoMedia == nil {
+		return nil, errors.New("Você precisa mandar uma imagem ou um vídeo para fazer uma figurinha")
+	}
 
-  if imageMedia == nil && videoMedia == nil {
-    return nil, errors.New("Você precisa mandar uma imagem ou um vídeo para fazer uma figurinha")
-  }
+	var downloadedMedia []byte
 
-  var downloadedMedia []byte
+	if imageMedia != nil {
+		downloadedMedia, _ = Client.Download(imageMedia)
+	}
 
-  if imageMedia != nil {
-    downloadedMedia, _ = Client.Download(imageMedia)
-  }
+	if videoMedia != nil {
+		downloadedMedia, _ = Client.Download(videoMedia)
+	}
 
-  if videoMedia != nil {
-    downloadedMedia, _ = Client.Download(videoMedia)
-  }
+	if downloadedMedia == nil {
+		return nil, errors.New("Erro ao tentar baixar mídia")
+	}
+	return downloadedMedia, nil
+}
 
-  if downloadedMedia == nil {
-    return nil, errors.New("Erro ao tentar baixar mídia")
-  }
-  return downloadedMedia, nil
+func (w WhatsAppIntegration) ExtractStickerMediaBytes(eventMessage *events.Message) ([]byte, error) {
+	stickerMedia := GetStickerMessage(eventMessage)
+
+	if stickerMedia == nil {
+		return nil, errors.New("Sticker Message not found")
+	}
+
+	downloadMedia, err := Client.Download(stickerMedia)
+
+	if err != nil {
+		return nil, errors.New("Error trying to Download Sticker")
+	}
+
+	return downloadMedia, nil
 }
 
 func (w WhatsAppIntegration) GetParticipantsOfGroup(msg *events.Message) ([]string, error) {
-  groupInfo, err := Client.GetGroupInfo(msg.Info.Chat)
+	groupInfo, err := Client.GetGroupInfo(msg.Info.Chat)
 
-  if err != nil {
-    fmt.Println("Error", err)
-    return nil, errors.New("Error getting participants list")
-  }
+	if err != nil {
+		fmt.Println("Error", err)
+		return nil, errors.New("Error getting participants list")
+	}
 
+	var participants []string
 
-  var participants []string
+	for _, jidParticipant := range groupInfo.Participants {
+		if jidParticipant.JID.User != Client.Store.ID.User {
+			participants = append(participants, jidParticipant.JID.User)
+		}
+	}
 
-  for _, jidParticipant := range groupInfo.Participants {
-    if (jidParticipant.JID.User != Client.Store.ID.User) {
-      participants = append(participants, jidParticipant.JID.User)
-    }
-  }
-
-  return participants, nil
+	return participants, nil
 }
 
 func GetImageMessage(msg *events.Message) (imageMsg *waProto.ImageMessage) {
@@ -322,3 +346,16 @@ func GetVideoMessage(msg *events.Message) (videoMsg *waProto.VideoMessage) {
 	return videoMsg
 }
 
+func GetStickerMessage(msg *events.Message) (stickerMsg *waProto.StickerMessage) {
+	if msg.Message.StickerMessage != nil {
+		stickerMsg = msg.Message.StickerMessage
+	} else if msg.Message.ExtendedTextMessage != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.StickerMessage != nil {
+		stickerMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.StickerMessage
+	} else {
+		return nil
+	}
+	return stickerMsg
+}

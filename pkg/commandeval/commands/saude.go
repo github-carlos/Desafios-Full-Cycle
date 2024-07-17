@@ -32,7 +32,7 @@ func (p SaudeCommand) Handler(input commandextractor.CommandInput) {
 		return
 	}
 
-  err = p.platform.SendSticker(webp, false, &input.EventMessage)
+  err = p.platform.SendSticker(webp, false, &input.EventMessage, true)
 
   if err != nil {
     fmt.Println("Failing sending message")
