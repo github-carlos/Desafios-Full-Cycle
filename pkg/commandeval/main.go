@@ -31,6 +31,7 @@ func NewCommandEval() *CommandEval {
   img := commands.NewImgCommand()
   sexta := commands.NewSextaCommand()
   lramos := commands.NewLRamosCommand()
+  zé := commands.NewZéCommand()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
@@ -40,7 +41,6 @@ func NewCommandEval() *CommandEval {
 	commands[sticker.GetKey()] = sticker
 	commands[download.GetKey()] = download
   commands[ze.GetKey()] = ze
-  commands["ze"] = ze
   commands[viadometro.GetKey()] = viadometro
   commands[top5.GetKey()] = top5
   // commands[porn.GetKey()] = porn
@@ -53,6 +53,7 @@ func NewCommandEval() *CommandEval {
   commands[img.GetKey()] = img
   commands[sexta.GetKey()] = sexta
   commands[lramos.GetKey()] = lramos
+  commands[zé.GetKey()] = zé
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
