@@ -2,10 +2,12 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"math/rand"
 	"trevas-bot/pkg/commandextractor"
+	"trevas-bot/pkg/converter"
 	"trevas-bot/pkg/platform"
 )
 
@@ -40,6 +42,32 @@ func (b ZeCommand) Handler(commandInput commandextractor.CommandInput) {
 func (b ZeCommand) sendRandomPhrase(commandInput *commandextractor.CommandInput) {
   payload := commandInput.Payload;
   convertedIndex, _ := strconv.Atoi(payload)
+
+  if commandInput.Payload == "amimir" {
+
+    filePath := "assets/group/amimir.jpeg"
+    img, err := os.ReadFile(filePath)
+
+    if err != nil {
+      fmt.Println("Failing getting amimir image")
+      return
+    }
+
+    webp, err := converter.Img2Webp(img)
+
+    if err != nil {
+      fmt.Println("Failing converting img to webp")
+      return
+    }
+
+    err = b.Platform.SendSticker(webp, false, &commandInput.EventMessage, true)
+
+    if err != nil {
+      fmt.Println("Failing sending message")
+      return
+    }
+    return;
+  }
 
   phraseIndex := 0;
   if convertedIndex <= len(phrasesZe) && convertedIndex > 0 {
