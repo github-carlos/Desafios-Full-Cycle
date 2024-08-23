@@ -84,5 +84,5 @@ func (c ZeCommand) GetKey() string {
 }
 
 func NewZeCommand() *ZeCommand {
-	return &ZeCommand{key: "zé"}
+	return &ZeCommand{key: "ze"}
 }
