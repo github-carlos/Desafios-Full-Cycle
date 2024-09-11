@@ -50,6 +50,7 @@ func extractText(eventMessage *events.Message) string {
 	if text == "" {
 		text = message.ExtendedTextMessage.GetText()
 	}
+
 	return strings.Trim(text, " ")
 }
 
@@ -60,6 +61,5 @@ func extractCommand(text string) string {
 
 func extractPayload(text string) string {
 	splitedText := strings.Split(text, " ")
-
 	return strings.Join(splitedText[1:], " ")
 }

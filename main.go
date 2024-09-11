@@ -25,9 +25,11 @@ func main() {
 	}
 	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
 	deviceStore, err := container.GetFirstDevice()
+
 	if err != nil {
 		panic(err)
 	}
+
 	clientLog := waLog.Stdout("Client", "INFO", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 	client.AddEventHandler(handler.EventHandler)
