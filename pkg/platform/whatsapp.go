@@ -13,7 +13,7 @@ import (
 
 	"github.com/nfnt/resize"
 	"go.mau.fi/whatsmeow"
-	waProto "go.mau.fi/whatsmeow/binary/proto"
+	waProto "go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types/events"
 	"google.golang.org/protobuf/proto"
 )
@@ -51,7 +51,7 @@ func (w WhatsAppIntegration) SendReply(text string, eventMessage *events.Message
 		ExtendedTextMessage: &waProto.ExtendedTextMessage{
 			Text: proto.String(text),
 			ContextInfo: &waProto.ContextInfo{
-				StanzaId:      proto.String(eventMessage.Info.ID),
+				StanzaID:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
 				QuotedMessage: eventMessage.Message,
 			},
@@ -82,7 +82,7 @@ func (w WhatsAppIntegration) SendText(input types.SendTextInput, eventMessage *e
 		ExtendedTextMessage: &waProto.ExtendedTextMessage{
 			Text: proto.String(input.Text),
 			ContextInfo: &waProto.ContextInfo{
-				MentionedJid: mentions,
+				MentionedJID: mentions,
 			},
 		},
 	}
@@ -112,7 +112,7 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 
 	if reply {
 		contextInfo = waProto.ContextInfo{
-			StanzaId:      proto.String(eventMessage.Info.ID),
+			StanzaID:      proto.String(eventMessage.Info.ID),
 			Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
 			QuotedMessage: eventMessage.Message,
 		}
@@ -120,16 +120,16 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 
 	msgToSend := &waProto.Message{
 		StickerMessage: &waProto.StickerMessage{
-			Url:           proto.String(uploadedSticker.URL),
+			URL:           proto.String(uploadedSticker.URL),
 			DirectPath:    proto.String(uploadedSticker.DirectPath),
 			MediaKey:      uploadedSticker.MediaKey,
 			IsAnimated:    proto.Bool(animated),
 			IsAvatar:      proto.Bool(false),
 			Mimetype:      proto.String("image/webp"),
-			FileEncSha256: uploadedSticker.FileEncSHA256,
-			FileSha256:    uploadedSticker.FileSHA256,
+			FileEncSHA256: uploadedSticker.FileEncSHA256,
+			FileSHA256:    uploadedSticker.FileSHA256,
 			FileLength:    proto.Uint64(uploadedSticker.FileLength),
-			StickerSentTs: proto.Int64(time.Now().Unix()),
+			StickerSentTS: proto.Int64(time.Now().Unix()),
 			ContextInfo:   &contextInfo,
 		},
 	}
@@ -176,16 +176,16 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 
 	msgToSend := &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
-			Url:           proto.String(uploadedImg.URL),
+			URL:           proto.String(uploadedImg.URL),
 			DirectPath:    proto.String(uploadedImg.DirectPath),
 			MediaKey:      uploadedImg.MediaKey,
 			Mimetype:      proto.String(http.DetectContentType(imgBytes)),
-			FileEncSha256: uploadedImg.FileEncSHA256,
-			FileSha256:    uploadedImg.FileSHA256,
+			FileEncSHA256: uploadedImg.FileEncSHA256,
+			FileSHA256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
-			JpegThumbnail: thumbnailBytes,
+			JPEGThumbnail: thumbnailBytes,
 			ContextInfo: &waProto.ContextInfo{
-				StanzaId:      proto.String(eventMessage.Info.ID),
+				StanzaID:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
 				QuotedMessage: eventMessage.Message,
 			},
@@ -220,16 +220,16 @@ func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *event
 
 	msgToSend := &waProto.Message{
 		VideoMessage: &waProto.VideoMessage{
-			Url:           proto.String(uploadedVideo.URL),
+			URL:           proto.String(uploadedVideo.URL),
 			DirectPath:    proto.String(uploadedVideo.DirectPath),
 			MediaKey:      uploadedVideo.MediaKey,
 			Mimetype:      proto.String("video/mp4"),
-			FileEncSha256: uploadedVideo.FileEncSHA256,
-			FileSha256:    uploadedVideo.FileSHA256,
+			FileEncSHA256: uploadedVideo.FileEncSHA256,
+			FileSHA256:    uploadedVideo.FileSHA256,
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
-			JpegThumbnail: input.Thumbnail,
+			JPEGThumbnail: input.Thumbnail,
 			ContextInfo: &waProto.ContextInfo{
-				StanzaId:      proto.String(eventMessage.Info.ID),
+				StanzaID:      proto.String(eventMessage.Info.ID),
 				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
 				QuotedMessage: eventMessage.Message,
 			},
@@ -242,6 +242,48 @@ func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *event
 		return errors.New("Ocorreu um erro ao enviar o video... por favor, tente novamente.")
 	}
 	fmt.Println("video enviado com sucesso!")
+	return nil
+}
+
+type SendAudioInput struct {
+	AudioBytes []byte
+}
+
+func (w WhatsAppIntegration) SendAudio(input SendAudioInput, eventMessage *events.Message) error {
+
+	if len(input.AudioBytes) > 50*1024*1024 {
+		return errors.New("Audio muito grande para fazer Upload.")
+	}
+
+	uploadedAudio, err := Client.Upload(context.Background(), input.AudioBytes, whatsmeow.MediaAudio)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return errors.New("Ocorreu um erro ao fazer o upload do audio... por favor, tente novamente.")
+	}
+
+	msgToSend := &waProto.Message{
+		AudioMessage: &waProto.AudioMessage{
+			URL:           proto.String(uploadedAudio.URL),
+			DirectPath:    proto.String(uploadedAudio.DirectPath),
+			MediaKey:      uploadedAudio.MediaKey,
+			Mimetype:      proto.String("audio/ogg; codecs=opus"),
+			FileEncSHA256: uploadedAudio.FileEncSHA256,
+			FileSHA256:    uploadedAudio.FileSHA256,
+			FileLength:    proto.Uint64(uploadedAudio.FileLength),
+			ContextInfo: &waProto.ContextInfo{
+				StanzaID:      proto.String(eventMessage.Info.ID),
+				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
+				QuotedMessage: eventMessage.Message,
+			},
+		},
+	}
+
+	_, err = Client.SendMessage(context.Background(), eventMessage.Info.Chat, msgToSend)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return errors.New("Ocorreu um erro ao enviar o audio... por favor, tente novamente.")
+	}
+	fmt.Println("audio enviado com sucesso!")
 	return nil
 }
 
