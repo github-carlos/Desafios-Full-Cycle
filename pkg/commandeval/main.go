@@ -32,6 +32,8 @@ func NewCommandEval() *CommandEval {
   sexta := commands.NewSextaCommand()
   lramos := commands.NewLRamosCommand()
   zeImg := commands.NewZéCommand()
+  caio := commands.NewCaioCommand()
+  tts := commands.NewTTSCommand()
 	const commandPrefix = '!'
 
 	commands := make(map[string]commands.Commander)
@@ -55,6 +57,8 @@ func NewCommandEval() *CommandEval {
   commands[lramos.GetKey()] = lramos
   commands[zeImg.GetKey()] = zeImg
   commands[ze.GetKey()] = ze
+  commands[caio.GetKey()] = caio
+  commands[tts.GetKey()] = tts
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
