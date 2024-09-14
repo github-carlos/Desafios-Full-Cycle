@@ -32,6 +32,7 @@ func NewCommandEval() *CommandEval {
   zeImg := commands.NewZéCommand()
   caio := commands.NewCaioCommand()
   tts := commands.NewTTSCommand()
+  post := commands.NewPostCommand()
 
 	commands := make(map[string]commands.Commander)
 
@@ -55,6 +56,7 @@ func NewCommandEval() *CommandEval {
   commands[ze.GetKey()] = ze
   commands[caio.GetKey()] = caio
   commands[tts.GetKey()] = tts
+  commands[post.GetKey()] = post
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
