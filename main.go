@@ -57,6 +57,17 @@ func main() {
 	} else {
 		// Already logged in, just connect
 		err = client.Connect()
+
+    groups, _ := client.GetJoinedGroups()
+
+    for _, group := range groups {
+      fmt.Println(group.GroupName.Name)
+      fmt.Println("JID", group.JID)
+      fmt.Println("Owner", group.OwnerJID)
+    }
+
+    fmt.Println("Groups", groups)
+
 		if err != nil {
 			panic(err)
 		}

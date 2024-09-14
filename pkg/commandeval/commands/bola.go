@@ -8,6 +8,7 @@ import (
 	"trevas-bot/pkg/commandextractor"
 	"trevas-bot/pkg/converter"
 	"trevas-bot/pkg/platform"
+	"trevas-bot/pkg/platform/types"
 )
 
 var phrases = []string{
@@ -36,7 +37,7 @@ var phrases = []string{
 	"Parabéns, Zé! HÁ HÁ HÁ HÁ! Vai ser pai de novo!",
 }
 
-var types = []string{
+var typesBola = []string{
 	"img",
 	"sticker",
 	"text",
@@ -52,7 +53,7 @@ func (b BolaCommand) Handler(commandInput commandextractor.CommandInput) {
 
 	b.Platform.SendReaction(&commandInput.EventMessage, platform.BolaReacton)
 
-	messageType := types[rand.Intn(len(types))]
+	messageType := typesBola[rand.Intn(len(typesBola))]
 
 
 	if messageType == "text" {
@@ -98,7 +99,7 @@ func (b BolaCommand) sendRandomImageSticker(commandInput *commandextractor.Comma
 		return
 	}
 
-	err = b.Platform.SendImg(img, &commandInput.EventMessage)
+  err = b.Platform.SendImg(types.SendImageInput{Image: img}, &commandInput.EventMessage)
 
 	if err != nil {
 		fmt.Println("Failing sending message")

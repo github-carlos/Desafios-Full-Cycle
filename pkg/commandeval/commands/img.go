@@ -3,8 +3,9 @@ package commands
 import (
 	"fmt"
 	"trevas-bot/pkg/commandextractor"
-	"trevas-bot/pkg/platform"
 	"trevas-bot/pkg/converter"
+	"trevas-bot/pkg/platform"
+	"trevas-bot/pkg/platform/types"
 )
 
 type ImgCommand struct {
@@ -31,7 +32,7 @@ func (p ImgCommand) Handler(input commandextractor.CommandInput) {
     return
   }
 
-  err = p.platform.SendImg(jpgMedia, &input.EventMessage)
+  err = p.platform.SendImg(types.SendImageInput{Image: jpgMedia}, &input.EventMessage)
 
   if err != nil {
     p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)

@@ -9,6 +9,7 @@ import (
 	"trevas-bot/pkg/commandextractor"
 	"trevas-bot/pkg/converter"
 	"trevas-bot/pkg/platform"
+	"trevas-bot/pkg/platform/types"
 )
 
 type DownloadCommand struct {
@@ -30,7 +31,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
 
   err := cmd.Run()
 
-  if err != nil {
+  if err != nil && err.Error() != "100" {
     go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)
     fmt.Println("Error trying to download media...", err.Error())
     p.platform.SendReply("Não foi possível fazer o download.", &input.EventMessage)
@@ -73,7 +74,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
 
       thumbVideo, _ := converter.GenThumbVideo(converter.GenThumbVideoInput{Video: videoBytes})
 
-      err = p.platform.SendVideo(platform.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo}, &input.EventMessage)
+      err = p.platform.SendVideo(types.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo}, &input.EventMessage)
 
       if err != nil {
         go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)

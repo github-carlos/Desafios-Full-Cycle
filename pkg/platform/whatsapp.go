@@ -143,15 +143,15 @@ func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eve
 	return nil
 }
 
-func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Message) error {
-	uploadedImg, err := Client.Upload(context.Background(), imgBytes, whatsmeow.MediaImage)
+func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *events.Message) error {
+	uploadedImg, err := Client.Upload(context.Background(), input.Image, whatsmeow.MediaImage)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao fazer o upload do imagem... por favor, tente novamente.")
 	}
 
 	// decode jpeg into image.Image
-	decodedImg, err := jpeg.Decode(bytes.NewReader(imgBytes))
+	decodedImg, err := jpeg.Decode(bytes.NewReader(input.Image))
 
 	if err != nil {
 		fmt.Println(err)
@@ -179,10 +179,11 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 			URL:           proto.String(uploadedImg.URL),
 			DirectPath:    proto.String(uploadedImg.DirectPath),
 			MediaKey:      uploadedImg.MediaKey,
-			Mimetype:      proto.String(http.DetectContentType(imgBytes)),
+			Mimetype:      proto.String(http.DetectContentType(input.Image)),
 			FileEncSHA256: uploadedImg.FileEncSHA256,
 			FileSHA256:    uploadedImg.FileSHA256,
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
+			Caption:       &input.Caption,
 			JPEGThumbnail: thumbnailBytes,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaID:      proto.String(eventMessage.Info.ID),
@@ -201,12 +202,7 @@ func (w WhatsAppIntegration) SendImg(imgBytes []byte, eventMessage *events.Messa
 	return nil
 }
 
-type SendVideoInput struct {
-	VideoBytes []byte
-	Thumbnail  []byte
-}
-
-func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *events.Message) error {
+func (w WhatsAppIntegration) SendVideo(input types.SendVideoInput, eventMessage *events.Message) error {
 
 	if len(input.VideoBytes) > 50*1024*1024 {
 		return errors.New("Video muito grande para fazer Upload.")
@@ -227,6 +223,7 @@ func (w WhatsAppIntegration) SendVideo(input SendVideoInput, eventMessage *event
 			FileEncSHA256: uploadedVideo.FileEncSHA256,
 			FileSHA256:    uploadedVideo.FileSHA256,
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
+			Caption:       &input.Caption,
 			JPEGThumbnail: input.Thumbnail,
 			ContextInfo: &waProto.ContextInfo{
 				StanzaID:      proto.String(eventMessage.Info.ID),

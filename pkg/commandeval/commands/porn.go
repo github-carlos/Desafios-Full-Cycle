@@ -12,6 +12,7 @@ import (
 	"trevas-bot/pkg/commandextractor"
 	"trevas-bot/pkg/converter"
 	"trevas-bot/pkg/platform"
+	"trevas-bot/pkg/platform/types"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -129,7 +130,7 @@ func (p PornCommand) Handler(input commandextractor.CommandInput) {
 
       videoThumbnail, _ := converter.GenThumbVideo(converter.GenThumbVideoInput{Path: downloadedFilePath})
 
-      err = p.platform.SendVideo(platform.SendVideoInput{VideoBytes: videoBytes, Thumbnail: videoThumbnail}, &input.EventMessage)
+      err = p.platform.SendVideo(types.SendVideoInput{VideoBytes: videoBytes, Thumbnail: videoThumbnail}, &input.EventMessage)
 
       if err != nil {
         go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)

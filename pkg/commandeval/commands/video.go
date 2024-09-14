@@ -1,4 +1,4 @@
-// yt-dlp -f "bestvideo[filesize<20M]" "ytsearch:filosofo piton" 
+// yt-dlp -f "bestvideo[filesize<20M]" "ytsearch:filosofo piton"
 package commands
 
 import (
@@ -10,6 +10,7 @@ import (
 	"trevas-bot/pkg/commandextractor"
 	"trevas-bot/pkg/converter"
 	"trevas-bot/pkg/platform"
+	"trevas-bot/pkg/platform/types"
 )
 
 type VideoCommand struct {
@@ -80,7 +81,7 @@ func (p VideoCommand) Handler(input commandextractor.CommandInput) {
       thumbVideo, _ := converter.GenThumbVideo(converter.GenThumbVideoInput{Video: videoBytes})
       fmt.Println("THumbVideo", thumbVideo)
 
-      err = p.platform.SendVideo(platform.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo}, &input.EventMessage)
+      err = p.platform.SendVideo(types.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo}, &input.EventMessage)
 
       if err != nil {
         go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)
