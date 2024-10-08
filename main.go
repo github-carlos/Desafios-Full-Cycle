@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"trevas-bot/pkg/handler"
+	"trevas-bot/pkg/jobexecutor"
 	"trevas-bot/pkg/platform"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -37,6 +38,9 @@ func main() {
 	// Setting Client
 	platform.SetWhatsAppClient(client)
 
+  // Setting JobsExecutor
+  jobexecutor.NewJobsExecutor(client)
+
 	if client.Store.ID == nil {
 		// No ID stored, new login
 		qrChan, _ := client.GetQRChannel(context.Background())
@@ -57,16 +61,6 @@ func main() {
 	} else {
 		// Already logged in, just connect
 		err = client.Connect()
-
-    groups, _ := client.GetJoinedGroups()
-
-    for _, group := range groups {
-      fmt.Println(group.GroupName.Name)
-      fmt.Println("JID", group.JID)
-      fmt.Println("Owner", group.OwnerJID)
-    }
-
-    fmt.Println("Groups", groups)
 
 		if err != nil {
 			panic(err)

@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+
+	// "math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -53,7 +54,7 @@ func (p PostCommand) Handler(input commandextractor.CommandInput) {
 	// Define the endpoint
 	uri := "https://www.naointendo.com.br/api/posts"
 
-	page := rand.Intn(8000)
+	page := 7985 //rand.Intn(8000)
 
 	url := fmt.Sprintf("%s?page=%d", uri, page)
 	fmt.Println("URl", url)
@@ -92,7 +93,11 @@ func (p PostCommand) Handler(input commandextractor.CommandInput) {
 		return
 	}
 
-	p.handleResponse(postResponse.Posts, &input.EventMessage)
+  err = p.handleResponse(postResponse.Posts, &input.EventMessage)
+
+  if err != nil {
+    p.Handler(input)
+  }
 }
 
 func (p PostCommand) GetKey() string {
@@ -103,44 +108,34 @@ func NewPostCommand() *PostCommand {
 	return &PostCommand{key: "post"}
 }
 
-func (p PostCommand) handleResponse(posts []PostItem, e *events.Message) {
+func (p PostCommand) handleResponse(posts []PostItem, e *events.Message) error {
 
-	post := posts[rand.Intn(len(posts))]
+  post := getRandomPost(posts)
 	fmt.Println("Post", post)
 
 	switch post.Type {
 	case "html":
-		p.handleHtmlPost(post, e)
-		break
+    return p.handleHtmlPost(post, e)
 	case "image":
-
-		if post.Media.Type == "gif" {
-			return
-		}
 
 		imageBytes, err := p.getImagePost(post.Media.Content)
 
 		if err != nil {
 			fmt.Println(err.Error())
-			return
+			return err
 		}
 
 		p.platform.SendImg(types.SendImageInput{Image: imageBytes, Caption: post.Title}, e)
 		break
 	case "video":
-		err := p.sendVideoPost(post, e)
-
-		if err != nil {
-			fmt.Println("Error getting Video", err.Error())
-		}
-		break
-
+		return p.sendVideoPost(post, e)
 	default:
 		fmt.Println("Post type not supported")
 	}
+  return nil
 }
 
-func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
+func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) error {
 	// it can be video or images inside HTML
 	fmt.Println("Handling Post HTML", post.Media.Content)
 	reader := strings.NewReader(post.Media.Content)
@@ -158,7 +153,7 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 		srcVideo, exists := iframe.Attr("src")
 
 		if !exists {
-			return
+			return nil
 		}
 
 		downloadPath := "temp/downloads/"
@@ -173,9 +168,9 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 
 		err := cmd.Run()
 
-		if err != nil && err.Error() != "100" {
+		if err != nil && !strings.Contains(err.Error(), "100") {
 			fmt.Println("Error trying to download media...", err.Error())
-			return
+			return err
 		}
 
 		defer func() {
@@ -189,7 +184,7 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 
 		if err != nil {
 			fmt.Println("Error trying to download media...", err.Error())
-			return
+			return err
 		}
 
 		var downloadedFilePath string
@@ -202,24 +197,22 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 
 				if err != nil {
 					fmt.Println("Error trying to download media...", err.Error())
-					return
+					return err
 				}
 
 				videoBytes, err = converter.Webm2Mp4(videoBytes)
 
 				if err != nil {
 					fmt.Println("Error trying to converting media to mp4...", err.Error())
-					return
+					return err
 				}
 
 				thumbVideo, _ := converter.GenThumbVideo(converter.GenThumbVideoInput{Video: videoBytes})
-				fmt.Println("THumbVideo", thumbVideo)
-
 				err = p.platform.SendVideo(types.SendVideoInput{VideoBytes: videoBytes, Thumbnail: thumbVideo, Caption: post.Title}, e)
 
 				if err != nil {
 					fmt.Println("Error trying to Send media...", err.Error())
-					return
+					return err
 				}
 
 				_ = os.Remove(downloadedFilePath)
@@ -239,7 +232,7 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 
 		data, err := http.Get(imgLink)
 
-		if err != nil {
+		if err != nil || data.StatusCode > 300 {
 			return
 		}
 
@@ -253,6 +246,7 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) {
 
 		p.platform.SendImg(types.SendImageInput{Image: imageData}, e)
 	})
+  return nil
 }
 
 func (p PostCommand) getImagePost(imageUrl string) ([]byte, error) {
@@ -306,7 +300,6 @@ func (p PostCommand) sendVideoPost(post PostItem, e *events.Message) error {
 	var downloadedFilePath string
 	for _, file := range downloadsFiles {
 		if strings.HasPrefix(file.Name(), prefixFileName) {
-			fmt.Println("Sending Video...")
 			downloadedFilePath = downloadPath + file.Name()
 			videoBytes, err := os.ReadFile(downloadedFilePath)
 
@@ -335,4 +328,17 @@ func (p PostCommand) sendVideoPost(post PostItem, e *events.Message) error {
 		}
 	}
   return nil
+}
+
+func getRandomPost(posts []PostItem) PostItem {
+  for true {
+    postNumber := 0//rand.Intn(len(posts))
+    post := posts[postNumber]
+
+    if post.Media.Type != "gif" {
+      fmt.Println("Post Number", postNumber)
+      return post
+    }
+  }
+  return PostItem{}
 }

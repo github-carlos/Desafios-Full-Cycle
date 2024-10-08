@@ -14,6 +14,7 @@ import (
 	"github.com/nfnt/resize"
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/proto/waE2E"
+	waTypes "go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 	"google.golang.org/protobuf/proto"
 )
@@ -157,6 +158,12 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 		fmt.Println(err)
 	}
 
+  defer func() {
+    if r := recover(); r != nil {
+      fmt.Println("Recovered in f", r)
+    }
+  }()
+
 	m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
 	outPath := fmt.Sprintf("temp/images/%d.jpg", time.Now().Unix())
 	out, err := os.Create(outPath)
@@ -174,6 +181,29 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 
 	thumbnailBytes, err := os.ReadFile(outPath)
 
+  var chat waTypes.JID
+  var stanzaID string
+  var participant string
+  var quotedMessage *waProto.Message
+  var contextInfo *waProto.ContextInfo
+
+  if eventMessage != nil {
+    chat = eventMessage.Info.Chat
+	  stanzaID =	eventMessage.Info.ID
+		participant = eventMessage.Info.Sender.ToNonAD().String()
+		quotedMessage = eventMessage.Message
+    contextInfo = &waProto.ContextInfo{
+				StanzaID:      proto.String(stanzaID),
+				Participant:   proto.String(participant),
+				QuotedMessage: quotedMessage,
+			}
+  } else {
+    chat = input.Message.Chat
+    stanzaID = input.Message.StanzaID
+    participant = input.Message.Participant
+    quotedMessage = input.Message.QuotedMessage
+  }
+
 	msgToSend := &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
 			URL:           proto.String(uploadedImg.URL),
@@ -185,15 +215,11 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
 			Caption:       &input.Caption,
 			JPEGThumbnail: thumbnailBytes,
-			ContextInfo: &waProto.ContextInfo{
-				StanzaID:      proto.String(eventMessage.Info.ID),
-				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
-				QuotedMessage: eventMessage.Message,
-			},
+			ContextInfo: contextInfo,
 		},
 	}
 
-	_, err = Client.SendMessage(context.Background(), eventMessage.Info.Chat, msgToSend)
+	_, err = Client.SendMessage(context.Background(), chat, msgToSend)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao enviar a imagem... por favor, tente novamente.")
@@ -214,6 +240,29 @@ func (w WhatsAppIntegration) SendVideo(input types.SendVideoInput, eventMessage 
 		return errors.New("Ocorreu um erro ao fazer o upload do video... por favor, tente novamente.")
 	}
 
+  var chat waTypes.JID
+  var stanzaID string
+  var participant string
+  var quotedMessage *waProto.Message
+  var contextInfo *waProto.ContextInfo
+
+  if eventMessage != nil {
+    chat = eventMessage.Info.Chat
+	  stanzaID =	eventMessage.Info.ID
+		participant = eventMessage.Info.Sender.ToNonAD().String()
+		quotedMessage = eventMessage.Message
+    contextInfo = &waProto.ContextInfo{
+				StanzaID:      proto.String(stanzaID),
+				Participant:   proto.String(participant),
+				QuotedMessage: quotedMessage,
+			}
+  } else {
+    chat = input.Message.Chat
+    stanzaID = input.Message.StanzaID
+    participant = input.Message.Participant
+    quotedMessage = input.Message.QuotedMessage
+  }
+
 	msgToSend := &waProto.Message{
 		VideoMessage: &waProto.VideoMessage{
 			URL:           proto.String(uploadedVideo.URL),
@@ -225,15 +274,11 @@ func (w WhatsAppIntegration) SendVideo(input types.SendVideoInput, eventMessage 
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
 			Caption:       &input.Caption,
 			JPEGThumbnail: input.Thumbnail,
-			ContextInfo: &waProto.ContextInfo{
-				StanzaID:      proto.String(eventMessage.Info.ID),
-				Participant:   proto.String(eventMessage.Info.Sender.ToNonAD().String()),
-				QuotedMessage: eventMessage.Message,
-			},
+			ContextInfo: contextInfo,
 		},
 	}
 
-	_, err = Client.SendMessage(context.Background(), eventMessage.Info.Chat, msgToSend)
+	_, err = Client.SendMessage(context.Background(), chat, msgToSend)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return errors.New("Ocorreu um erro ao enviar o video... por favor, tente novamente.")

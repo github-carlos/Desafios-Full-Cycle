@@ -31,7 +31,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
 
   err := cmd.Run()
 
-  if err != nil && err.Error() != "100" {
+  if err != nil && !strings.Contains(err.Error(), "100") {
     go p.platform.SendReaction(&input.EventMessage, platform.ErrorReaction)
     fmt.Println("Error trying to download media...", err.Error())
     p.platform.SendReply("Não foi possível fazer o download.", &input.EventMessage)
