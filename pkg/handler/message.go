@@ -22,6 +22,7 @@ func MessageHandler(eventMessage *events.Message) {
 
 	commandInput, err = commandextractor.Extract(eventMessage)
 
+  fmt.Println(commandInput.Text)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -39,12 +40,20 @@ func MessageHandler(eventMessage *events.Message) {
   }
 
   appDatabase.SaveMessage(input)
+  appDatabase.SaveUser(eventMessage)
 
 	if commandInput.Command == "" {
 		return
 	}
 
+  commandInput.Store = appDatabase
+
 	fmt.Println("Message:", commandInput.Command, "Phone:", commandInput.EventMessage.Info.Sender)
+
+  if (appDatabase.CheckIfUserIsBlocked(eventMessage)) {
+    fmt.Println("Ignoring Command")
+    return
+  }
 
 	if err := CommandEval.Handle(commandInput); err != nil {
 		fmt.Println(err)

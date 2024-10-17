@@ -2,6 +2,7 @@ package commandextractor
 
 import (
 	"strings"
+	"trevas-bot/pkg/store"
 
 	"go.mau.fi/whatsmeow/types/events"
 )
@@ -12,6 +13,7 @@ type CommandInput struct {
 	MessageType         string
 	EventMessage events.Message
   Text string
+  Store *store.AppDatabase
 }
 
 const commandPrefix = '!'

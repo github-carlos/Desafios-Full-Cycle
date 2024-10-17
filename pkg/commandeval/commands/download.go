@@ -27,7 +27,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
   prefixFileName := fmt.Sprintf("%d", now.Unix())
   fileName := downloadPath + prefixFileName  + ".%(ext)s"
 
-  cmd := exec.Command("yt-dlp", "-vU", input.Payload, "--output", fileName, "--max-filesize", "50M", "--no-playlist")
+  cmd := exec.Command("yt-dlp", "-vU", input.Payload, "--output", fileName, "--no-playlist")
 
   err := cmd.Run()
 

@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/texttospeech v1.8.0
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/google/generative-ai-go v0.12.0
-	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/mdp/qrterminal/v3 v3.2.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	go.mau.fi/whatsmeow v0.0.0-20240821142752-3d63c6fcc1a7

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"trevas-bot/pkg/commandeval/commands"
 	"trevas-bot/pkg/commandextractor"
+	"trevas-bot/pkg/llm"
 	"trevas-bot/pkg/platform"
 )
 
@@ -22,7 +23,7 @@ func NewCommandEval() *CommandEval {
   top5 := commands.NewTop5Command()
   ramos := commands.NewRamosCommand()
   meme := commands.NewMemeCommand()
-  gen := commands.NewGenCommand()
+  gen := commands.NewGenCommand(llm.NewGeminiGenerator())
   sorteio := commands.NewSorteioCommand()
   video := commands.NewVideoCommand()
   saude := commands.NewSaudeCommand()
@@ -33,6 +34,10 @@ func NewCommandEval() *CommandEval {
   caio := commands.NewCaioCommand()
   // tts := commands.NewTTSCommand()
   post := commands.NewPostCommand()
+  info := commands.NewInfoCommand(llm.NewGeminiGenerator())
+  leo := commands.NewLeoCommand(llm.NewGeminiGenerator())
+  gdiesel := commands.NewGDieselCommand()
+  ignore := commands.NewIgnoreCommand()
 
 	commands := make(map[string]commands.Commander)
 
@@ -57,6 +62,10 @@ func NewCommandEval() *CommandEval {
   commands[caio.GetKey()] = caio
   // commands[tts.GetKey()] = tts
   commands[post.GetKey()] = post
+  commands[info.GetKey()] = info
+  commands[leo.GetKey()] = leo
+  commands[gdiesel.GetKey()] = gdiesel
+  commands[ignore.GetKey()] = ignore
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
