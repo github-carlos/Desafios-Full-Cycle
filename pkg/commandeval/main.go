@@ -38,6 +38,7 @@ func NewCommandEval() *CommandEval {
   leo := commands.NewLeoCommand(llm.NewGeminiGenerator())
   gdiesel := commands.NewGDieselCommand()
   ignore := commands.NewIgnoreCommand()
+  reveal := commands.NewRevealCommand()
 
 	commands := make(map[string]commands.Commander)
 
@@ -66,6 +67,7 @@ func NewCommandEval() *CommandEval {
   commands[leo.GetKey()] = leo
   commands[gdiesel.GetKey()] = gdiesel
   commands[ignore.GetKey()] = ignore
+  commands[reveal.GetKey()] = reveal
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
