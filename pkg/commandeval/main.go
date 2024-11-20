@@ -39,6 +39,7 @@ func NewCommandEval() *CommandEval {
   gdiesel := commands.NewGDieselCommand()
   ignore := commands.NewIgnoreCommand()
   reveal := commands.NewRevealCommand()
+  fig := commands.NewFigCommand()
 
 	commands := make(map[string]commands.Commander)
 
@@ -68,6 +69,7 @@ func NewCommandEval() *CommandEval {
   commands[gdiesel.GetKey()] = gdiesel
   commands[ignore.GetKey()] = ignore
   commands[reveal.GetKey()] = reveal
+  commands[fig.GetKey()] = fig
 
 	whatsApp := platform.NewWhatsAppIntegration()
 
