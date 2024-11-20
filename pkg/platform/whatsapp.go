@@ -462,14 +462,20 @@ func (w WhatsAppIntegration) GetParticipantsOfGroup(msg *events.Message) ([]stri
 }
 
 func GetImageMessage(msg *events.Message) (imageMsg *waProto.ImageMessage) {
+
 	msg.SourceWebMsg.GetMediaData()
 	if msg.Message.ImageMessage != nil {
 		imageMsg = msg.Message.ImageMessage
 	} else if msg.Message.ExtendedTextMessage != nil &&
 		msg.Message.ExtendedTextMessage.ContextInfo != nil &&
-		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil &&
-		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.ImageMessage != nil {
-		imageMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.ImageMessage
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil {
+
+		if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.ImageMessage != nil {
+			imageMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.ImageMessage
+		} else if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2() != nil &&
+			msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2().Message.ImageMessage != nil {
+			imageMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2().Message.ImageMessage
+		}
 	} else {
 		return nil
 	}
@@ -483,7 +489,14 @@ func GetVideoMessage(msg *events.Message) (videoMsg *waProto.VideoMessage) {
 		msg.Message.ExtendedTextMessage.ContextInfo != nil &&
 		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil &&
 		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.VideoMessage != nil {
-		videoMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.VideoMessage
+
+		if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.VideoMessage != nil {
+			videoMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.VideoMessage
+		} else if msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2() != nil &&
+			msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2().Message.VideoMessage != nil {
+			videoMsg = msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.GetViewOnceMessageV2().Message.VideoMessage
+		}
+
 	} else {
 		return nil
 	}
