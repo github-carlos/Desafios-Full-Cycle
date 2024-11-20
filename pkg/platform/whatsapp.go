@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"image/jpeg"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -99,9 +100,9 @@ func (w WhatsAppIntegration) SendText(input types.SendTextInput, eventMessage *e
 
 func (w WhatsAppIntegration) SendSticker(stickerBytes []byte, animated bool, eventMessage *events.Message, reply bool) error {
 
-	if len(stickerBytes) > 1024*1024 {
-		return errors.New("O arquivo enviado é muito grande.")
-	}
+	// if len(stickerBytes) > 1024*1024 {
+	// 	return errors.New("O arquivo enviado é muito grande.")
+	// }
 
 	uploadedSticker, err := Client.Upload(context.Background(), stickerBytes, whatsmeow.MediaImage)
 	if err != nil {
@@ -158,11 +159,11 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 		fmt.Println(err)
 	}
 
-  defer func() {
-    if r := recover(); r != nil {
-      fmt.Println("Recovered in f", r)
-    }
-  }()
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in f", r)
+		}
+	}()
 
 	m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
 	outPath := fmt.Sprintf("temp/images/%d.jpg", time.Now().Unix())
@@ -181,28 +182,28 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 
 	thumbnailBytes, err := os.ReadFile(outPath)
 
-  var chat waTypes.JID
-  var stanzaID string
-  var participant string
-  var quotedMessage *waProto.Message
-  var contextInfo *waProto.ContextInfo
+	var chat waTypes.JID
+	var stanzaID string
+	var participant string
+	var quotedMessage *waProto.Message
+	var contextInfo *waProto.ContextInfo
 
-  if eventMessage != nil {
-    chat = eventMessage.Info.Chat
-	  stanzaID =	eventMessage.Info.ID
+	if eventMessage != nil {
+		chat = eventMessage.Info.Chat
+		stanzaID = eventMessage.Info.ID
 		participant = eventMessage.Info.Sender.ToNonAD().String()
 		quotedMessage = eventMessage.Message
-    contextInfo = &waProto.ContextInfo{
-				StanzaID:      proto.String(stanzaID),
-				Participant:   proto.String(participant),
-				QuotedMessage: quotedMessage,
-			}
-  } else {
-    chat = input.Message.Chat
-    stanzaID = input.Message.StanzaID
-    participant = input.Message.Participant
-    quotedMessage = input.Message.QuotedMessage
-  }
+		contextInfo = &waProto.ContextInfo{
+			StanzaID:      proto.String(stanzaID),
+			Participant:   proto.String(participant),
+			QuotedMessage: quotedMessage,
+		}
+	} else {
+		chat = input.Message.Chat
+		stanzaID = input.Message.StanzaID
+		participant = input.Message.Participant
+		quotedMessage = input.Message.QuotedMessage
+	}
 
 	msgToSend := &waProto.Message{
 		ImageMessage: &waProto.ImageMessage{
@@ -215,7 +216,7 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 			FileLength:    proto.Uint64(uploadedImg.FileLength),
 			Caption:       &input.Caption,
 			JPEGThumbnail: thumbnailBytes,
-			ContextInfo: contextInfo,
+			ContextInfo:   contextInfo,
 		},
 	}
 
@@ -240,28 +241,28 @@ func (w WhatsAppIntegration) SendVideo(input types.SendVideoInput, eventMessage 
 		return errors.New("Ocorreu um erro ao fazer o upload do video... por favor, tente novamente.")
 	}
 
-  var chat waTypes.JID
-  var stanzaID string
-  var participant string
-  var quotedMessage *waProto.Message
-  var contextInfo *waProto.ContextInfo
+	var chat waTypes.JID
+	var stanzaID string
+	var participant string
+	var quotedMessage *waProto.Message
+	var contextInfo *waProto.ContextInfo
 
-  if eventMessage != nil {
-    chat = eventMessage.Info.Chat
-	  stanzaID =	eventMessage.Info.ID
+	if eventMessage != nil {
+		chat = eventMessage.Info.Chat
+		stanzaID = eventMessage.Info.ID
 		participant = eventMessage.Info.Sender.ToNonAD().String()
 		quotedMessage = eventMessage.Message
-    contextInfo = &waProto.ContextInfo{
-				StanzaID:      proto.String(stanzaID),
-				Participant:   proto.String(participant),
-				QuotedMessage: quotedMessage,
-			}
-  } else {
-    chat = input.Message.Chat
-    stanzaID = input.Message.StanzaID
-    participant = input.Message.Participant
-    quotedMessage = input.Message.QuotedMessage
-  }
+		contextInfo = &waProto.ContextInfo{
+			StanzaID:      proto.String(stanzaID),
+			Participant:   proto.String(participant),
+			QuotedMessage: quotedMessage,
+		}
+	} else {
+		chat = input.Message.Chat
+		stanzaID = input.Message.StanzaID
+		participant = input.Message.Participant
+		quotedMessage = input.Message.QuotedMessage
+	}
 
 	msgToSend := &waProto.Message{
 		VideoMessage: &waProto.VideoMessage{
@@ -274,7 +275,7 @@ func (w WhatsAppIntegration) SendVideo(input types.SendVideoInput, eventMessage 
 			FileLength:    proto.Uint64(uploadedVideo.FileLength),
 			Caption:       &input.Caption,
 			JPEGThumbnail: input.Thumbnail,
-			ContextInfo: contextInfo,
+			ContextInfo:   contextInfo,
 		},
 	}
 
@@ -335,6 +336,65 @@ func (w WhatsAppIntegration) SendReaction(eventMessage *events.Message, reaction
 	if err != nil {
 		fmt.Println("Error sending reaction:", err)
 	}
+}
+
+// Helper function to get the profile picture of a user
+func (w WhatsAppIntegration) GetProfilePicture(jid waTypes.JID) ([]byte, error) {
+	picUrl, err := Client.GetProfilePictureInfo(jid, &whatsmeow.GetProfilePictureParams{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get profile picture URL: %w", err)
+	}
+
+	resp, err := http.Get(picUrl.URL)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch profile picture: %w", err)
+	}
+	defer resp.Body.Close()
+	picBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read profile picture: %w", err)
+	}
+	return picBytes, nil
+	// img, err := jpeg.Decode(bytes.NewReader(picBytes))
+	// if err != nil {
+	//     return nil, fmt.Errorf("failed to decode profile picture: %w", err)
+	// }
+	// return img, nil
+}
+
+func (w WhatsAppIntegration) HasVideo(msg *events.Message) bool {
+	if msg.Message.VideoMessage != nil {
+		return true
+	} else if msg.Message.ExtendedTextMessage != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.VideoMessage != nil {
+		return true
+	}
+	return false
+}
+
+func (w WhatsAppIntegration) IsReplying(msg *events.Message) bool {
+	return msg.Message.ExtendedTextMessage != nil && msg.Message.ExtendedTextMessage.ContextInfo != nil &&
+		msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage != nil
+}
+
+func (w WhatsAppIntegration) GetQuotedText(msg *events.Message) string {
+	if !w.IsReplying(msg) {
+		return ""
+	}
+
+	return *msg.Message.ExtendedTextMessage.ContextInfo.QuotedMessage.Conversation
+}
+
+func (w WhatsAppIntegration) GetJidReplied(msg *events.Message) waTypes.JID {
+	if !w.IsReplying(msg) {
+		return waTypes.JID{}
+	}
+	number := msg.Message.ExtendedTextMessage.ContextInfo.Participant
+
+	return waTypes.NewJID(*number, "s.whatsapp.net")
 }
 
 func (w WhatsAppIntegration) ExtractMediaBytes(eventMessage *events.Message) ([]byte, error) {

@@ -13,7 +13,7 @@ import (
 	"github.com/nfnt/resize"
 )
 
-func Img2Webp(image []byte) ([]byte, error) {
+func Img2Webp(image []byte, isVideo bool) ([]byte, error) {
 
 	now := time.Now()
 	inputPath := fmt.Sprintf("temp/%d.gif", now.Unix())
@@ -26,7 +26,27 @@ func Img2Webp(image []byte) ([]byte, error) {
 		return nil, nil
 	}
 
-	cmd := exec.Command("ffmpeg", "-i", inputPath, "-vcodec", "libwebp", "-preset", "default", "-loop", "0", "-an", "-qscale:v", "20", "-t", "00:00:10", "-compression_level", "100", "-vf", "scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=20, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse", outputPath)
+  var cmd *exec.Cmd
+
+  fmt.Println("isVideo", isVideo)
+  if (isVideo) {
+    cmd = exec.Command("ffmpeg",
+        "-i", inputPath,
+        "-vf", "fps=10,scale=512:512:force_original_aspect_ratio=decrease",
+        "-c:v", "libwebp",
+        "-q:v", "60",
+        "-lossless", "0",
+        "-loop", "0",
+        "-preset", "default",
+        "-an",
+        "-vsync", "0",
+      "-t", "6",
+      "-q:v", "60",
+        outputPath)
+  } else {
+    cmd = exec.Command("ffmpeg", "-i", inputPath, outputPath);
+  }
+
 	if err := cmd.Run(); err != nil {
 		fmt.Println("Erro ao converter o arquivo:", err)
 		_ = os.Remove(inputPath)

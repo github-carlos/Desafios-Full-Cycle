@@ -34,7 +34,7 @@ func NewCommandEval() *CommandEval {
   caio := commands.NewCaioCommand()
   // tts := commands.NewTTSCommand()
   post := commands.NewPostCommand()
-  info := commands.NewInfoCommand(llm.NewGeminiGenerator())
+  info := commands.NewInfoCommand()
   leo := commands.NewLeoCommand(llm.NewGeminiGenerator())
   gdiesel := commands.NewGDieselCommand()
   ignore := commands.NewIgnoreCommand()

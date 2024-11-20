@@ -27,7 +27,7 @@ func (p SextaCommand) Handler(input commandextractor.CommandInput) {
 			return
 		}
 
-		webp, err := converter.Img2Webp(img)
+		webp, err := converter.Img2Webp(img, false)
 
 		if err != nil {
 			fmt.Println("Failing converting img to webp")
