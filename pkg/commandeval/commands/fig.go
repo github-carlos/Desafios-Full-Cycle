@@ -77,7 +77,7 @@ func (p FigCommand) Handler(input commandextractor.CommandInput) {
 		dw.SetFillColor(pixel)
 
     // fontSize := float64(getLengthBiggestLine(text))
-		dw.SetFontSize(90)
+		dw.SetFontSize(80)
     dw.SetGravity(imagick.GRAVITY_CENTER)
 
 
