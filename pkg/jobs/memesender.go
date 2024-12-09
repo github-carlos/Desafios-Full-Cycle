@@ -178,7 +178,7 @@ func (m MemeSenderJob) handleHtmlPost(post PostItem, messages []types.Message) e
 			return nil
 		}
 
-		downloadPath := "temp/downloads/"
+		downloadPath := "./temp/downloads/"
 		now := time.Now()
 
 		prefixFileName := fmt.Sprintf("%d", now.Unix())
@@ -303,7 +303,7 @@ func (m MemeSenderJob) sendVideoPost(post PostItem, messages []types.Message) er
 		return errors.New("Video Media Type Not Supported")
 	}
 
-	downloadPath := "temp/downloads/"
+	downloadPath := "./temp/downloads/"
 	now := time.Now()
 
 	prefixFileName := fmt.Sprintf("%d", now.Unix())

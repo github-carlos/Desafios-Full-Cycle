@@ -26,7 +26,7 @@ func (p VideoCommand) Handler(input commandextractor.CommandInput) {
 
   go p.platform.SendReaction(&input.EventMessage, platform.LoadingReaction)
 
-  downloadPath := "temp/downloads/"
+  downloadPath := "./temp/downloads/"
   now := time.Now()
 
   prefixFileName := fmt.Sprintf("%d", now.Unix())

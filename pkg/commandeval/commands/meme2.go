@@ -156,7 +156,7 @@ func (p PostCommand) handleHtmlPost(post PostItem, e *events.Message) error {
 			return nil
 		}
 
-		downloadPath := "temp/downloads/"
+		downloadPath := "./temp/downloads/"
 		now := time.Now()
 
 		prefixFileName := fmt.Sprintf("%d", now.Unix())
@@ -273,7 +273,7 @@ func (p PostCommand) sendVideoPost(post PostItem, e *events.Message) error {
 		return errors.New("Video Media Type Not Supported")
 	}
 
-	downloadPath := "temp/downloads/"
+	downloadPath := "./temp/downloads/"
 	now := time.Now()
 
 	prefixFileName := fmt.Sprintf("%d", now.Unix())

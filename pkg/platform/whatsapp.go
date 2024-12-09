@@ -166,7 +166,7 @@ func (w WhatsAppIntegration) SendImg(input types.SendImageInput, eventMessage *e
 	}()
 
 	m := resize.Thumbnail(72, 72, decodedImg, resize.Lanczos3)
-	outPath := fmt.Sprintf("temp/images/%d.jpg", time.Now().Unix())
+	outPath := fmt.Sprintf("./temp/images/%d.jpg", time.Now().Unix())
 	out, err := os.Create(outPath)
 	if err != nil {
 		fmt.Println(err)

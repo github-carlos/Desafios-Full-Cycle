@@ -21,7 +21,7 @@ func (p DownloadCommand) Handler(input commandextractor.CommandInput) {
 	fmt.Println("Running Download Command")
   go p.platform.SendReaction(&input.EventMessage, platform.LoadingReaction)
 
-  downloadPath := "temp/downloads/"
+  downloadPath := "./temp/downloads/"
   now := time.Now()
 
   prefixFileName := fmt.Sprintf("%d", now.Unix())
